@@ -911,6 +911,133 @@ body.dark-mode .tag-color-6 { background: rgba(234, 179, 8, 0.2); color: #fde047
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
 }
+
+/* ============================================
+   Project Bar
+   ============================================ */
+.project-bar {
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  padding: 10px 20px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  align-items: center;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+}
+
+.project-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-emphasis);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.project-chip:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.project-chip.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+/* ============================================
+   Project Dashboard Panel (3-column)
+   ============================================ */
+.project-dashboard-panel {
+  background: var(--bg-elevated);
+  border-bottom: 2px solid var(--border-default);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.phase-section {
+  padding: 20px 24px 24px;
+  border-right: 1px solid var(--border-default);
+}
+
+.phase-section:last-child {
+  border-right: none;
+}
+
+.phase-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Shrink stepper/construction inside phase sections */
+.phase-section .stepper-container {
+  border-bottom: none;
+  padding: 8px 0 0 0;
+}
+
+.phase-section .construction-dashboard {
+  border-bottom: none;
+  padding: 8px 0 0 0;
+  gap: 20px;
+}
+
+.phase-section .kpi-ring-container {
+  width: 90px;
+  height: 90px;
+}
+
+.phase-section .kpi-ring-inner {
+  width: 72px;
+  height: 72px;
+}
+
+.phase-section .kpi-value {
+  font-size: 20px;
+}
+
+.phase-section .milestones-grid {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.phase-section .milestone-weight {
+  display: none;
+}
+
+.operation-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  color: var(--text-tertiary);
+  gap: 8px;
+}
+
+.operation-placeholder .op-icon {
+  font-size: 28px;
+  opacity: 0.4;
+}
+
+.operation-placeholder p {
+  font-size: 12px;
+  font-weight: 500;
+}
 </style>
 </head>
 <body>
@@ -975,6 +1102,14 @@ body.dark-mode .tag-color-6 { background: rgba(234, 179, 8, 0.2); color: #fde047
       <button class="refresh-btn" id="refreshBtn">Refresh</button>
     </div>
   </div>
+
+  <!-- Project selector chips -->
+  <div id="projectBar" class="project-bar">
+    <button class="project-chip active" data-project="">All Projects</button>
+  </div>
+
+  <!-- Per-project dashboard (hidden until a project is selected) -->
+  <div id="projectDashboard" class="project-dashboard-panel" style="display:none;"></div>
 
   <div class="main-content">
 
@@ -1044,6 +1179,8 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm8cY1h0vzlvL_-0Rg8
 // ============================================
 let allData = [];
 let allEmails = [];
+let allProjects = [];
+let activeProject = null;
 
 function toggleTheme() {
   document.body.classList.toggle("dark-mode");
@@ -1056,20 +1193,26 @@ async function loadData() {
   document.getElementById("sidebar").innerHTML = '<div class="loading">Loading...</div>';
 
   try {
-    const [summariesRes, emailsRes] = await Promise.all([
+    const [summariesRes, emailsRes, projectsRes] = await Promise.all([
       fetch(SCRIPT_URL + "?action=getSummaries"),
-      fetch(SCRIPT_URL + "?action=getEmails")
+      fetch(SCRIPT_URL + "?action=getEmails"),
+      fetch(SCRIPT_URL + "?action=getProjects")
     ]);
 
     const summariesResult = await summariesRes.json();
     if (!summariesResult.success) throw new Error(summariesResult.error);
-
     allData = summariesResult.data || [];
 
     const emailsResult = await emailsRes.json();
     if (emailsResult.success) {
       allEmails = emailsResult.data || [];
     }
+
+    const projectsResult = await projectsRes.json();
+    if (projectsResult.success) {
+      allProjects = projectsResult.data || [];
+    }
+    renderProjectBar();
 
     if (allData.length === 0) {
       document.getElementById("sidebar").innerHTML =
@@ -1129,7 +1272,12 @@ function displayCards() {
     });
   }
 
-  if (project) filtered = filtered.filter(i => i.project === project);
+  // Project bar selection overrides the project dropdown
+  if (activeProject) {
+    filtered = filtered.filter(i => i.project === activeProject);
+  } else if (project) {
+    filtered = filtered.filter(i => i.project === project);
+  }
   if (phase) filtered = filtered.filter(i => i.phase === phase);
   if (category) filtered = filtered.filter(i => i.category === category);
   if (status) filtered = filtered.filter(i => i.status === status);
@@ -1254,17 +1402,7 @@ function showDetail(item) {
     tasksHTML = '<div class="empty-state">No tasks</div>';
   }
 
-  let topDashboardHTML = '';
-  const currentPhase = String(item.phase || '').toLowerCase();
-
-  if (currentPhase.includes('development')) {
-    topDashboardHTML = getDevelopmentStepperHTML(item.category);
-  } else if (currentPhase.includes('construction')) {
-    topDashboardHTML = getConstructionDashboardHTML(item);
-  }
-
   document.getElementById("detailPanel").innerHTML =
-    topDashboardHTML +
     '<div class="detail-header">' +
       '<h2>' + esc(item.project) + ' › ' + esc(item.phase || '—') + ' › ' + esc(item.category) + '</h2>' +
       '<div class="detail-meta">' +
@@ -1488,7 +1626,7 @@ function getProjectColorClass(str) {
   return 'tag-color-' + Math.abs(hash % 7);
 }
 
-function getDevelopmentStepperHTML(currentCategory) {
+function getDevelopmentStepperHTML(stageIndex) {
   const steps = [
     { name: 'Land & Prep', icon: '📍' },
     { name: 'Environment', icon: '🌍' },
@@ -1497,19 +1635,7 @@ function getDevelopmentStepperHTML(currentCategory) {
     { name: 'Permitting', icon: '🏗️' }
   ];
 
-  let currentIndex = 0;
-
-  if (currentCategory === 'Project Acquisition' || currentCategory === 'Land & Property') {
-    currentIndex = 0;
-  } else if (currentCategory === 'Environmental & ESG' || currentCategory === 'Simulations') {
-    currentIndex = 1;
-  } else if (currentCategory === 'Grid Connection') {
-    currentIndex = 2;
-  } else if (currentCategory === 'Technical Design') {
-    currentIndex = 3;
-  } else if (currentCategory === 'Licensing & Permits') {
-    currentIndex = 4;
-  }
+  const currentIndex = parseInt(stageIndex) || 0;
 
   const fillWidth = currentIndex === 0 ? 0 : (currentIndex / (steps.length - 1)) * 100;
 
@@ -1536,6 +1662,89 @@ function getDevelopmentStepperHTML(currentCategory) {
 
   html += '</div>';
   return html;
+}
+
+// ============================================
+// PROJECT BAR & DASHBOARD
+// ============================================
+
+function renderProjectBar() {
+  const bar = document.getElementById('projectBar');
+  if (!bar) return;
+
+  let html = '<button class="project-chip' + (!activeProject ? ' active' : '') + '" data-project="">All Projects</button>';
+
+  allProjects.forEach(p => {
+    const isActive = activeProject === p.project;
+    const statusLabel = p.status && p.status !== 'Active' ? ' · ' + p.status : '';
+    html += '<button class="project-chip' + (isActive ? ' active' : '') + '" data-project="' + esc(p.project) + '">' +
+      esc(p.project) + (statusLabel ? '<span style="opacity:0.6;font-weight:400;">' + esc(statusLabel) + '</span>' : '') +
+    '</button>';
+  });
+
+  bar.innerHTML = html;
+
+  bar.querySelectorAll('.project-chip').forEach(chip => {
+    chip.addEventListener('click', () => selectProject(chip.dataset.project || null));
+  });
+}
+
+function selectProject(name) {
+  activeProject = name || null;
+  renderProjectBar();
+  renderProjectDashboard();
+  displayCards();
+}
+
+function renderProjectDashboard() {
+  const panel = document.getElementById('projectDashboard');
+  if (!panel) return;
+
+  if (!activeProject) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  const project = allProjects.find(p => p.project === activeProject) || {};
+
+  // Development panel
+  const stageIndex = parseInt(project.dev_stage_index) || 0;
+  const devHTML = getDevelopmentStepperHTML(stageIndex);
+
+  // Construction panel — reuse getConstructionDashboardHTML with Projects sheet data
+  const constructionItem = {
+    civil_works_pct:    project.civil_works_pct    || 0,
+    pv_ramming_pct:     project.pv_ramming_pct     || 0,
+    pv_mounting_pct:    project.pv_mounting_pct    || 0,
+    bess_pct:           project.bess_pct           || 0,
+    electrical_pct:     project.electrical_pct     || 0,
+    commissioning_pct:  project.commissioning_pct  || 0
+  };
+  const constructionHTML = getConstructionDashboardHTML(constructionItem);
+
+  // Operation panel
+  const opStatus = project.operation_status && project.operation_status !== '—' && project.operation_status !== ''
+    ? esc(String(project.operation_status))
+    : 'Coming Soon';
+
+  panel.innerHTML =
+    '<div class="phase-section">' +
+      '<div class="phase-section-title">🏗️ Development</div>' +
+      devHTML +
+    '</div>' +
+    '<div class="phase-section">' +
+      '<div class="phase-section-title">⚙️ Construction</div>' +
+      constructionHTML +
+    '</div>' +
+    '<div class="phase-section">' +
+      '<div class="phase-section-title">⚡ Operation</div>' +
+      '<div class="operation-placeholder">' +
+        '<div class="op-icon">🔌</div>' +
+        '<p>' + opStatus + '</p>' +
+      '</div>' +
+    '</div>';
+
+  panel.style.display = 'grid';
 }
 
 function getConstructionDashboardHTML(item) {
