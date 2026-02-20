@@ -1102,16 +1102,22 @@ function renderProjectBar() {
   const bar = document.getElementById('projectBar');
   if (!bar) return;
 
+  // Derive project names from allData (summaries); enrich with allProjects when available
+  const projectsFromData = [...new Set(allData.map(i => i.project).filter(Boolean))].sort();
+  const projectsMap = {};
+  allProjects.forEach(p => { if (p.project) projectsMap[p.project] = p; });
+
   let html = '<button class="project-chip' + (!activeProject ? ' active' : '') +
              '" data-project="">All Projects</button>';
 
-  allProjects.forEach(p => {
-    const isActive = activeProject === p.project;
-    const displayName = formatProjectName(p.project);
-    const statusLabel = p.status && p.status !== 'Active' ? ' · ' + p.status : '';
+  projectsFromData.forEach(name => {
+    const isActive = activeProject === name;
+    const displayName = formatProjectName(name);
+    const meta = projectsMap[name];
+    const statusLabel = meta && meta.status && meta.status !== 'Active' ? ' · ' + meta.status : '';
     html +=
       '<button class="project-chip' + (isActive ? ' active' : '') +
-      '" data-project="' + esc(p.project) + '">' +
+      '" data-project="' + esc(name) + '">' +
         esc(displayName) +
         (statusLabel ? '<span style="opacity:0.6;font-weight:400;font-size:11px;">' + esc(statusLabel) + '</span>' : '') +
       '</button>';
