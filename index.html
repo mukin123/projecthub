@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -584,7 +584,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   <div class="header">
     <div class="header-content">
       <div class="logo">
-        <div class="logo-icon">ðŸ“§</div>
+        <div class="logo-icon">📧</div>
         <div class="logo-text">
           <h1>Email Intelligence</h1>
           <p>Project Management Platform</p>
@@ -592,9 +592,9 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
       </div>
     </div>
     <div style="display:flex;gap:12px;">
-      <button class="theme-toggle" id="taskViewBtn" title="Master Action Items">ðŸ“‹</button>
+      <button class="theme-toggle" id="taskViewBtn" title="Master Action Items">📋</button>
       <button class="theme-toggle" id="themeToggle" title="Toggle dark / light mode">
-        <span id="themeIcon">ðŸŒ™</span>
+        <span id="themeIcon">🌙</span>
       </button>
     </div>
   </div>
@@ -611,7 +611,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
         <option value="all">All Time</option>
       </select>
     </div>
-    <!-- PROJECT dropdown hidden â€” use project chip bar below -->
+    <!-- PROJECT dropdown hidden — use project chip bar below -->
     <div class="filter-group hidden">
       <label>Project</label>
       <select id="projectSelect"><option value="">All Projects</option></select>
@@ -673,12 +673,12 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
         <table class="master-tasks-table" id="masterTaskTable">
           <thead>
             <tr>
-              <th data-sort="project" style="cursor:pointer;" title="Sort">Project â†•ï¸</th>
-              <th data-sort="phase" style="cursor:pointer;" title="Sort">Phase â†•ï¸</th>
-              <th data-sort="category" style="cursor:pointer;" title="Sort">Category â†•ï¸</th>
-              <th data-sort="description" style="cursor:pointer;" title="Sort">Task Description â†•ï¸</th>
-              <th data-sort="owner" style="cursor:pointer;" title="Sort">Owner â†•ï¸</th>
-              <th data-sort="deadline" style="cursor:pointer;" title="Sort">Deadline â†•ï¸</th>
+              <th data-sort="project" style="cursor:pointer;" title="Sort">Project ↕️</th>
+              <th data-sort="phase" style="cursor:pointer;" title="Sort">Phase ↕️</th>
+              <th data-sort="category" style="cursor:pointer;" title="Sort">Category ↕️</th>
+              <th data-sort="description" style="cursor:pointer;" title="Sort">Task Description ↕️</th>
+              <th data-sort="owner" style="cursor:pointer;" title="Sort">Owner ↕️</th>
+              <th data-sort="deadline" style="cursor:pointer;" title="Sort">Deadline ↕️</th>
             </tr>
           </thead>
           <tbody id="masterTasksTableBody"></tbody>
@@ -703,7 +703,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
       <div class="panel-header">
         <span class="panel-project-name" id="panelProjectName"></span>
         <span class="collapsed-hint" onclick="toggleProjectPanel()">KPIs</span>
-        <button class="panel-collapse-btn" id="panelCollapseBtn" onclick="toggleProjectPanel()" title="Collapse panel">â€¹</button>
+        <button class="panel-collapse-btn" id="panelCollapseBtn" onclick="toggleProjectPanel()" title="Collapse panel">‹</button>
       </div>
       <div class="panel-body" id="panelBody"></div>
     </div>
@@ -730,7 +730,7 @@ function esc(text) {
   return div.innerHTML;
 }
 
-/** Format ISO/raw date string â†’ "31 Jan 2026" */
+/** Format ISO/raw date string → "31 Jan 2026" */
 function formatDate(str) {
   if (!str) return 'N/A';
   const d = new Date(str);
@@ -743,7 +743,7 @@ function formatProjectName(name) {
   return (name || '').replace(/_/g, ' ');
 }
 
-/** Map phase string â†’ CSS class name */
+/** Map phase string → CSS class name */
 function getPhaseClass(phase) {
   const p = (phase || '').toLowerCase();
   if (p.includes('development'))           return 'development';
@@ -775,7 +775,7 @@ function toggleTheme() {
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
   localStorage.setItem('darkMode', isDark);
-  document.getElementById('themeIcon').textContent = isDark ? 'â˜€ï¸' : 'ðŸŒ™';
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
 }
 
 // ============================================
@@ -886,7 +886,7 @@ function displayCards() {
         '<div class="card-header">' +
           '<div class="card-status ' + phClass + '"></div>' +
           '<div class="card-title">' +
-            esc(item.project) + ' â€º ' + esc(item.phase || 'â€”') + ' â€º ' + esc(item.category) +
+            esc(item.project) + ' › ' + esc(item.phase || '—') + ' › ' + esc(item.category) +
           '</div>' +
         '</div>' +
         '<div class="card-meta">' +
@@ -918,35 +918,35 @@ function showDetail(item) {
   const tasks       = extractTasks(item);
   const attachments = extractAttachments(item);
 
-  // â”€â”€ Files & Emails tab â”€â”€
+  // ── Files & Emails tab ──
   let emailsHTML = '';
   if (emailLinks.length > 0) {
-    emailsHTML = '<div class="section-title">ðŸ“§ Related Emails (' + emailLinks.length + ')</div>';
+    emailsHTML = '<div class="section-title">📧 Related Emails (' + emailLinks.length + ')</div>';
     emailsHTML += '<div class="email-list">';
     emailLinks.forEach((email, i) => {
       emailsHTML +=
         '<a href="' + email.url + '" target="_blank" class="email-item">' +
           '<div class="email-item-header">' +
             '<div class="email-item-title">' +
-              '<span class="email-item-icon">ðŸ“©</span>' +
+              '<span class="email-item-icon">📩</span>' +
               esc(email.sender) +
             '</div>' +
           '</div>' +
           '<div class="email-item-meta">' +
             '<div class="email-meta-label">Date:</div>' +
-            '<div class="email-meta-value">' + esc(email.date) + (email.time ? ' Â· ' + esc(email.time) : '') + '</div>' +
+            '<div class="email-meta-value">' + esc(email.date) + (email.time ? ' · ' + esc(email.time) : '') + '</div>' +
           '</div>' +
         '</a>';
     });
     emailsHTML += '</div>';
   } else {
-    emailsHTML = '<div class="section-title">ðŸ“§ Related Emails</div><div class="empty-state">No emails found</div>';
+    emailsHTML = '<div class="section-title">📧 Related Emails</div><div class="empty-state">No emails found</div>';
   }
 
   let attachmentsHTML = '';
   if (attachments.length > 0) {
     attachmentsHTML = '<div class="section-divider"></div>';
-    attachmentsHTML += '<div class="section-title">ðŸ“Ž Attachments</div>';
+    attachmentsHTML += '<div class="section-title">📎 Attachments</div>';
     attachmentsHTML += '<div class="attachments-grid">';
     attachments.forEach(att => {
       attachmentsHTML +=
@@ -959,7 +959,7 @@ function showDetail(item) {
     attachmentsHTML += '</div>';
   }
 
-  // â”€â”€ Tasks tab â”€â”€
+  // ── Tasks tab ──
   let tasksHTML = '';
   if (tasks.length > 0) {
     tasksHTML = '<div class="tasks-table-wrapper"><table class="tasks-table">';
@@ -969,7 +969,7 @@ function showDetail(item) {
         '<tr>' +
           '<td><span class="task-status ' + t.status + '">' + t.status + '</span></td>' +
           '<td class="task-description">' + esc(t.description) + '</td>' +
-          '<td class="task-responsible">' + esc(t.responsible || 'â€”') + '</td>' +
+          '<td class="task-responsible">' + esc(t.responsible || '—') + '</td>' +
         '</tr>';
     });
     tasksHTML += '</tbody></table></div>';
@@ -981,10 +981,10 @@ function showDetail(item) {
 
   document.getElementById('detailPanel').innerHTML =
     '<div class="detail-header">' +
-      '<h2>' + esc(item.project) + ' â€º ' + esc(item.phase || 'â€”') + ' â€º ' + esc(item.category) + '</h2>' +
+      '<h2>' + esc(item.project) + ' › ' + esc(item.phase || '—') + ' › ' + esc(item.category) + '</h2>' +
       '<div class="detail-meta">' +
-        '<div class="detail-meta-item">ðŸ“§ ' + item.email_count + (item.email_count === 1 ? ' email' : ' emails') + '</div>' +
-        '<div class="detail-meta-item">ðŸ“… ' + formatDate(item.time_period || item.last_updated) + '</div>' +
+        '<div class="detail-meta-item">📧 ' + item.email_count + (item.email_count === 1 ? ' email' : ' emails') + '</div>' +
+        '<div class="detail-meta-item">📅 ' + formatDate(item.time_period || item.last_updated) + '</div>' +
         '<div class="detail-meta-item"><span class="card-badge ' + phClass + '" style="font-size:11px;">' + esc(item.phase || item.status) + '</span></div>' +
       '</div>' +
     '</div>' +
@@ -1020,14 +1020,14 @@ function getEmailLinks(item) {
   );
   matches.forEach(email => {
     if (email.mail) {
-      const urls = email.mail.match(/(https:\\/\\/docs\\.google\\.com\\/[^\\s<>"]+)/g);
+      const urls = email.mail.match(/(https:\/\/docs\.google\.com\/[^\s<>"]+)/g);
       if (urls) {
         urls.forEach(url => {
           let dateObj = null, isValidDate = false;
           if (email.date) {
             const clean = String(email.date)
-              .replace(/\\s+at\\s+/i, ' ')
-              .replace(/\\s+(EET|EST|EDT|PST|PDT|CET|CEST|UTC|GMT|MSK|JST|IST)\\b/gi, '')
+              .replace(/\s+at\s+/i, ' ')
+              .replace(/\s+(EET|EST|EDT|PST|PDT|CET|CEST|UTC|GMT|MSK|JST|IST)\b/gi, '')
               .trim();
             dateObj = new Date(clean);
             isValidDate = !isNaN(dateObj.getTime());
@@ -1056,12 +1056,12 @@ function extractTasks(item) {
     { field: item.completed_items, status: 'done' }
   ].forEach(({ field, status }) => {
     if (field && field !== 'None identified') {
-      field.split('\\n').forEach(line => {
-        const clean = line.replace(/^[â€¢\\-*]\\s*/, '').trim();
+      field.split('\n').forEach(line => {
+        const clean = line.replace(/^[•\-*]\s*/, '').trim();
         if (clean.length > 3) {
-          const owner    = clean.match(/\\(Owner:\\s*([^)]+)\\)/i)?.[1] || clean.match(/\\(([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\)/)?.[1];
-          const deadline = clean.match(/\\((\\d{4}-\\d{2}-\\d{2}|\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}|\\w+\\s+\\d{1,2},?\\s*\\d{4}?)\\)/i)?.[1];
-          const desc     = clean.replace(/\\([^)]+\\)/g, '').trim();
+          const owner    = clean.match(/\(Owner:\s*([^)]+)\)/i)?.[1] || clean.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\)/)?.[1];
+          const deadline = clean.match(/\((\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\w+\s+\d{1,2},?\s*\d{4}?)\)/i)?.[1];
+          const desc     = clean.replace(/\([^)]+\)/g, '').trim();
           tasks.push({ status, description: desc || clean, responsible: owner || '', deadline: deadline || '' });
         }
       });
@@ -1073,17 +1073,17 @@ function extractTasks(item) {
 function extractAttachments(item) {
   const attachments = [];
   const text = [item.executive_summary, item.key_points].join(' ');
-  const urls = [...new Set(text.match(/(https?:\\/\\/[^\\s<>"{}|\\\\^\\[\\]\` ]+)/gi) || [])];
+  const urls = [...new Set(text.match(/(https?:\/\/[^\s<>"{}|\\^\[\]\` ]+)/gi) || [])];
   urls.forEach(url => {
     url = url.replace(/[.,;:!?)]+$/, '');
-    let icon = 'ðŸ“„', type = 'Link', name = 'Document';
+    let icon = '📄', type = 'Link', name = 'Document';
     if (url.includes('docs.google.com')) {
-      if (url.includes('/spreadsheets/')) { icon = 'ðŸ“Š'; type = 'Sheets'; name = 'Spreadsheet'; }
-      else if (url.includes('/document/'))     { icon = 'ðŸ“'; type = 'Docs';   name = 'Document'; }
-      else if (url.includes('/presentation/')) { icon = 'ðŸ“Š'; type = 'Slides'; name = 'Presentation'; }
-      else { icon = 'ðŸ“'; type = 'Drive'; name = 'File'; }
-    } else if (url.match(/\\.(pdf|PDF)($|\\?)/)) {
-      icon = 'ðŸ“•'; type = 'PDF'; name = 'PDF';
+      if (url.includes('/spreadsheets/')) { icon = '📊'; type = 'Sheets'; name = 'Spreadsheet'; }
+      else if (url.includes('/document/'))     { icon = '📝'; type = 'Docs';   name = 'Document'; }
+      else if (url.includes('/presentation/')) { icon = '📊'; type = 'Slides'; name = 'Presentation'; }
+      else { icon = '📁'; type = 'Drive'; name = 'File'; }
+    } else if (url.match(/\.(pdf|PDF)($|\?)/)) {
+      icon = '📕'; type = 'PDF'; name = 'PDF';
     }
     attachments.push({ url, icon, type, name });
   });
@@ -1104,7 +1104,7 @@ function renderProjectBar() {
   allProjects.forEach(p => {
     const isActive = activeProject === p.project;
     const displayName = formatProjectName(p.project);
-    const statusLabel = p.status && p.status !== 'Active' ? ' Â· ' + p.status : '';
+    const statusLabel = p.status && p.status !== 'Active' ? ' · ' + p.status : '';
     html +=
       '<button class="project-chip' + (isActive ? ' active' : '') +
       '" data-project="' + esc(p.project) + '">' +
@@ -1135,7 +1135,7 @@ function toggleProjectPanel() {
   const btn   = document.getElementById('panelCollapseBtn');
   if (!panel) return;
   panel.classList.toggle('collapsed');
-  if (btn) btn.textContent = panel.classList.contains('collapsed') ? 'â€º' : 'â€¹';
+  if (btn) btn.textContent = panel.classList.contains('collapsed') ? '›' : '‹';
 }
 
 function renderProjectDashboard() {
@@ -1155,11 +1155,11 @@ function renderProjectDashboard() {
 
   if (nameEl) nameEl.textContent = formatProjectName(activeProject);
 
-  // â”€â”€ Development â”€â”€
+  // ── Development ──
   const stageIndex = parseInt(project.dev_stage_index) || 0;
   const devHTML = getVerticalStepperHTML(stageIndex);
 
-  // â”€â”€ Construction â”€â”€
+  // ── Construction ──
   const allZero = !parseFloat(project.civil_works_pct) &&
                   !parseFloat(project.pv_ramming_pct) &&
                   !parseFloat(project.pv_mounting_pct) &&
@@ -1167,27 +1167,27 @@ function renderProjectDashboard() {
                   !parseFloat(project.electrical_pct) &&
                   !parseFloat(project.commissioning_pct);
   const constructionHTML = allZero
-    ? '<div class="construction-not-started"><div class="ns-icon">ðŸ—ï¸</div><p>Not started yet</p></div>'
+    ? '<div class="construction-not-started"><div class="ns-icon">🏗️</div><p>Not started yet</p></div>'
     : getPanelConstructionHTML(project);
 
-  // â”€â”€ Operation â”€â”€
+  // ── Operation ──
   const opStatus = project.operation_status &&
-                   project.operation_status !== 'â€”' &&
+                   project.operation_status !== '—' &&
                    project.operation_status !== ''
-    ? '<div class="panel-op-status">ðŸ”‹ ' + esc(String(project.operation_status)) + '</div>'
-    : '<div class="panel-op-placeholder"><div class="op-icon">ðŸ”Œ</div><p>Coming Soon</p></div>';
+    ? '<div class="panel-op-status">🔋 ' + esc(String(project.operation_status)) + '</div>'
+    : '<div class="panel-op-placeholder"><div class="op-icon">🔌</div><p>Coming Soon</p></div>';
 
   panelBody.innerHTML =
     '<div class="panel-section">' +
-      '<div class="panel-section-title">ðŸ—ï¸ Development</div>' +
+      '<div class="panel-section-title">🏗️ Development</div>' +
       devHTML +
     '</div>' +
     '<div class="panel-section">' +
-      '<div class="panel-section-title">âš™ï¸ Construction</div>' +
+      '<div class="panel-section-title">⚙️ Construction</div>' +
       constructionHTML +
     '</div>' +
     '<div class="panel-section">' +
-      '<div class="panel-section-title">âš¡ Operation</div>' +
+      '<div class="panel-section-title">⚡ Operation</div>' +
       opStatus +
     '</div>';
 
@@ -1198,11 +1198,11 @@ function renderProjectDashboard() {
 /** Vertical stepper for the right panel */
 function getVerticalStepperHTML(stageIndex) {
   const steps = [
-    { name: 'Land & Prep',    icon: 'ðŸ“' },
-    { name: 'Environment',    icon: 'ðŸŒ' },
-    { name: 'Grid Sync',      icon: 'âš¡' },
-    { name: 'Tech Design',    icon: 'ðŸ“' },
-    { name: 'Permitting',     icon: 'ðŸ›ï¸' }
+    { name: 'Land & Prep',    icon: '📍' },
+    { name: 'Environment',    icon: '🌍' },
+    { name: 'Grid Sync',      icon: '⚡' },
+    { name: 'Tech Design',    icon: '📐' },
+    { name: 'Permitting',     icon: '🏛️' }
   ];
   const current = parseInt(stageIndex) || 0;
   let html = '<div class="stepper-vertical">';
@@ -1210,7 +1210,7 @@ function getVerticalStepperHTML(stageIndex) {
     const isLast    = idx === steps.length - 1;
     let statusClass = '';
     let icon        = step.icon;
-    if (idx < current)      { statusClass = 'completed'; icon = 'âœ“'; }
+    if (idx < current)      { statusClass = 'completed'; icon = '✓'; }
     else if (idx === current) { statusClass = 'active'; }
 
     html +=
@@ -1248,7 +1248,7 @@ function getPanelConstructionHTML(project) {
   milestones.forEach(m => {
     const isDone      = m.pct === 100;
     const inProgress  = m.pct > 0 && m.pct < 100;
-    const icon        = isDone ? 'âœ“' : (inProgress ? 'â†»' : '');
+    const icon        = isDone ? '✓' : (inProgress ? '↻' : '');
     const borderStyle = inProgress ? 'border-color:var(--accent-primary);color:var(--accent-primary);' : '';
     listHTML +=
       '<div class="panel-milestone-item ' + (isDone ? 'done' : '') + '">' +
@@ -1273,11 +1273,11 @@ function getPanelConstructionHTML(project) {
 /** Horizontal stepper (kept for any standalone use) */
 function getDevelopmentStepperHTML(stageIndex) {
   const steps = [
-    { name: 'Land & Prep', icon: 'ðŸ“' },
-    { name: 'Environment', icon: 'ðŸŒ' },
-    { name: 'Grid Sync',   icon: 'âš¡' },
-    { name: 'Tech Design', icon: 'ðŸ“' },
-    { name: 'Permitting',  icon: 'ðŸ›ï¸' }
+    { name: 'Land & Prep', icon: '📍' },
+    { name: 'Environment', icon: '🌍' },
+    { name: 'Grid Sync',   icon: '⚡' },
+    { name: 'Tech Design', icon: '📐' },
+    { name: 'Permitting',  icon: '🏛️' }
   ];
   const current   = parseInt(stageIndex) || 0;
   const fillWidth = current === 0 ? 0 : (current / (steps.length - 1)) * 100;
@@ -1288,7 +1288,7 @@ function getDevelopmentStepperHTML(stageIndex) {
 
   steps.forEach((step, idx) => {
     let statusClass = '', icon = step.icon;
-    if (idx < current)      { statusClass = 'completed'; icon = 'âœ“'; }
+    if (idx < current)      { statusClass = 'completed'; icon = '✓'; }
     else if (idx === current) { statusClass = 'active'; }
     html +=
       '<div class="step ' + statusClass + '">' +
@@ -1340,7 +1340,7 @@ function renderMasterTasks() {
       if (task.status === 'todo') {
         allPendingTasks.push({
           project: item.project, phase: item.phase, category: item.category,
-          description: task.description, owner: task.responsible || 'â€”', deadline: task.deadline || 'â€”'
+          description: task.description, owner: task.responsible || '—', deadline: task.deadline || '—'
         });
       }
     });
@@ -1358,7 +1358,7 @@ function renderMasterTasks() {
 
   const tbody = document.getElementById('masterTasksTableBody');
   if (allPendingTasks.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">No pending tasks! ðŸŽ‰</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">No pending tasks! 🎉</td></tr>';
     return;
   }
 
@@ -1367,7 +1367,7 @@ function renderMasterTasks() {
     rowsHtml +=
       '<tr>' +
         '<td><span class="project-badge ' + getProjectColorClass(task.project) + '">' + esc(formatProjectName(task.project)) + '</span></td>' +
-        '<td><span class="phase-badge">' + esc(task.phase || 'â€”') + '</span></td>' +
+        '<td><span class="phase-badge">' + esc(task.phase || '—') + '</span></td>' +
         '<td style="font-size:11px;color:var(--text-tertiary);">' + esc(task.category) + '</td>' +
         '<td class="master-task-description">' + esc(task.description) + '</td>' +
         '<td class="master-task-owner">' + esc(task.owner) + '</td>' +
@@ -1416,8 +1416,8 @@ function displayMasterTasks() {
           '<td><span class="phase-badge">' + esc(task.phase) + '</span></td>' +
           '<td>' + esc(task.category) + '</td>' +
           '<td class="master-task-description">' + esc(task.description) + '</td>' +
-          '<td class="master-task-owner">' + esc(task.owner || 'â€”') + '</td>' +
-          '<td class="master-task-deadline">' + esc(task.deadline || 'â€”') + '</td>' +
+          '<td class="master-task-owner">' + esc(task.owner || '—') + '</td>' +
+          '<td class="master-task-deadline">' + esc(task.deadline || '—') + '</td>' +
         '</tr>';
     });
     document.getElementById('masterTasksTableBody').innerHTML = html;
@@ -1431,13 +1431,13 @@ function buildMasterTasksTable() {
   const allTasks = [];
   allData.forEach(item => {
     if (item.action_items && item.action_items !== 'None identified') {
-      const lines = item.action_items.split('\\n').filter(l => l.trim());
+      const lines = item.action_items.split('\n').filter(l => l.trim());
       lines.forEach(line => {
-        const cleaned = line.replace(/^[â€¢\\-*]\\s*/, '').trim();
+        const cleaned = line.replace(/^[•\-*]\s*/, '').trim();
         if (cleaned.length > 3) {
-          const ownerMatch    = cleaned.match(/\\(Owner:\\s*([^)]+)\\)/i) || cleaned.match(/\\(([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\)/);
-          const deadlineMatch = cleaned.match(/\\((\\d{4}-\\d{2}-\\d{2}|\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}|\\w+\\s+\\d{1,2},?\\s*\\d{4}?)\\)/i);
-          const description   = cleaned.replace(/\\([^)]+\\)/g, '').trim();
+          const ownerMatch    = cleaned.match(/\(Owner:\s*([^)]+)\)/i) || cleaned.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\)/);
+          const deadlineMatch = cleaned.match(/\((\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\w+\s+\d{1,2},?\s*\d{4}?)\)/i);
+          const description   = cleaned.replace(/\([^)]+\)/g, '').trim();
           allTasks.push({
             project: item.project, phase: item.phase || 'Unknown', category: item.category,
             description: description || cleaned,
@@ -1519,7 +1519,7 @@ function initializeApp() {
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
     const icon = document.getElementById('themeIcon');
-    if (icon) icon.textContent = 'â˜€ï¸';
+    if (icon) icon.textContent = '☀️';
   }
 
   const themeToggle = document.getElementById('themeToggle');
