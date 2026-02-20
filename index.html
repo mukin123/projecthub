@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* CSS_Styles.gs — inlined */
+/* CSS_Styles.gs - inlined */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -711,7 +711,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   </div>
 </div>
 <script>
-// JavaScript_Frontend.gs — inlined
+// JavaScript_Frontend.gs - inlined
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm8cY1h0vzlvL_-0Rg8mJUurwfbF1ANnKuKUZ0MXE5KYmtpuqbYFqcbCQuX-bHYjT8uQ/exec";
 
 let allData = [];
@@ -789,7 +789,7 @@ async function loadData() {
     const [summariesRes, emailsRes, projectsRes] = await Promise.all([
       fetch(SCRIPT_URL + '?action=getSummaries'),
       fetch(SCRIPT_URL + '?action=getEmails'),
-      fetch(SCRIPT_URL + '?action=getProjects')
+      fetch(SCRIPT_URL + '?action=getProjects').catch(() => null)
     ]);
 
     const summariesResult = await summariesRes.json();
@@ -799,8 +799,12 @@ async function loadData() {
     const emailsResult = await emailsRes.json();
     if (emailsResult.success) allEmails = emailsResult.data || [];
 
-    const projectsResult = await projectsRes.json();
-    if (projectsResult.success) allProjects = projectsResult.data || [];
+    if (projectsRes) {
+      try {
+        const projectsResult = await projectsRes.json();
+        if (projectsResult.success) allProjects = projectsResult.data || [];
+      } catch(e) { allProjects = []; }
+    }
 
     renderProjectBar();
 
