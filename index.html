@@ -600,7 +600,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   </div>
 
   <!-- Filter Bar -->
-  <div class="filters">
+  <div class="filters" id="mainFilters">
     <div class="filter-group">
       <label>Time Period</label>
       <select id="timeFilter">
@@ -640,7 +640,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   </div>
 
   <!-- Project Chip Bar -->
-  <div class="project-bar-wrapper">
+  <div class="project-bar-wrapper" id="projectBarWrapper">
     <div id="projectBar" class="project-bar">
       <button class="project-chip active" data-project="">All Projects</button>
     </div>
@@ -1548,10 +1548,14 @@ function initializeApp() {
       const detailPanel  = document.getElementById('detailPanel');
       const projectPanel = document.getElementById('projectDashboard');
 
+      const mainFilters  = document.getElementById('mainFilters');
+      const chipBar      = document.getElementById('projectBarWrapper');
       if (isTaskView) {
         if (sidebar)      sidebar.style.display      = 'none';
         if (detailPanel)  detailPanel.style.display  = 'none';
         if (projectPanel) projectPanel.style.display = 'none';
+        if (mainFilters)  mainFilters.style.display  = 'none';
+        if (chipBar)      chipBar.style.display      = 'none';
         if (masterView)   masterView.classList.add('active');
         taskViewBtn.style.background = 'var(--accent-primary)';
         taskViewBtn.style.color      = 'white';
@@ -1559,6 +1563,8 @@ function initializeApp() {
       } else {
         if (sidebar)     sidebar.style.display     = 'block';
         if (detailPanel) detailPanel.style.display = 'block';
+        if (mainFilters) mainFilters.style.display = '';
+        if (chipBar)     chipBar.style.display     = '';
         if (masterView)  masterView.classList.remove('active');
         taskViewBtn.style.background = '';
         taskViewBtn.style.color      = '';
