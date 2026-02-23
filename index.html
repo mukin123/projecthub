@@ -1280,6 +1280,9 @@ function switchProjectSection(section) {
   if (section !== 'summaries') closeMobileDetail();
   if (section === 'tasks') {
     openTaskView();
+    document.querySelectorAll('.project-nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === section);
+    });
     return;
   }
   activeSection = section;
