@@ -551,6 +551,26 @@ button.refresh-btn:hover { background: var(--accent-hover); }
 /* ============================================ Master Task View */
 #masterTaskView { display: none; background: var(--bg-primary); }
 
+.task-topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.task-filter-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 6px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 13px; font-family: inherit;
+  cursor: pointer; transition: all 0.15s;
+}
+.task-filter-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.task-filter-toggle.active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
+
 .master-task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .master-task-header h2 { font-size: 20px; color: var(--text-primary); }
 
@@ -1116,12 +1136,17 @@ body.mobile-ui .card-meta  { font-size: 11px; }
       </nav>
 
       <div id="masterTaskView">
-        <div class="filters" style="border-top:none;">
+        <!-- Always-visible top bar -->
+        <div class="task-topbar">
+          <button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">&#9664; Summaries</button>
+          <button class="task-filter-toggle" id="taskFilterToggle">&#9881; Filters</button>
+        </div>
+        <!-- Collapsible filter dropdowns — hidden by default -->
+        <div class="filters task-filters-panel" id="taskFiltersPanel" style="display:none;border-top:none;">
           <div class="filter-group"><label>Time Period</label><select id="taskTimeFilter"><option value="1">Last Month</option><option value="3">Last 3 Months</option><option value="6">Last 6 Months</option><option value="12">Last 12 Months</option><option value="all">All Time</option></select></div>
           <div class="filter-group"><label>Phase</label><select id="taskPhaseFilter"><option value="">All Phases</option></select></div>
           <div class="filter-group"><label>Category</label><select id="taskCategoryFilter"><option value="">All Categories</option></select></div>
           <div class="filter-group"><label>Status</label><select id="taskStatusFilter"><option value="">All (excl. Archived)</option><option value="Active">Active</option><option value="Recent">Recent</option><option value="Archived">Archived</option></select></div>
-          <div class="filter-group"><label>&nbsp;</label><button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">&#9664; Summaries</button></div>
         </div>
         <div class="master-task-body">
           <div class="master-task-header"><h2>Pending Tasks</h2><span id="taskCount" class="task-status todo">0 Pending</span></div>
@@ -2270,6 +2295,18 @@ function initializeApp() {
   // ✕ Close button inside master tasks view
   const taskViewCloseBtn = document.getElementById('taskViewCloseBtn');
   if (taskViewCloseBtn) taskViewCloseBtn.addEventListener('click', closeTaskView);
+
+  // Filters toggle button
+  const taskFilterToggle = document.getElementById('taskFilterToggle');
+  const taskFiltersPanel = document.getElementById('taskFiltersPanel');
+  if (taskFilterToggle && taskFiltersPanel) {
+    taskFilterToggle.addEventListener('click', () => {
+      const isOpen = taskFiltersPanel.style.display !== 'none';
+      taskFiltersPanel.style.display = isOpen ? 'none' : 'flex';
+      taskFilterToggle.classList.toggle('active', !isOpen);
+      taskFilterToggle.textContent = isOpen ? '⚙ Filters' : '✕ Hide Filters';
+    });
+  }
 
   // ── Mobile nav: JS-class-driven (body.mobile-ui) ──────────────────
   const navToggleBtn = document.getElementById('navToggleBtn');
