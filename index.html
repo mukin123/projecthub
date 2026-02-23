@@ -116,23 +116,22 @@ body {
 
 /* Dropdown panel */
 .project-bar-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
+  position: fixed;          /* fixed so it escapes any overflow:auto parent */
+  top: 56px;                /* will be positioned by JS */
+  left: 12px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: 10px;
   box-shadow: var(--shadow-lg);
   padding: 8px;
-  z-index: 150;
+  z-index: 9999;            /* always on top */
   min-width: 220px;
-  max-width: 360px;
+  max-width: calc(100vw - 24px);
   max-height: 260px;
   overflow-y: auto;
-  display: none;
   flex-wrap: wrap;
   gap: 6px;
+  display: none;            /* hidden by default */
 }
 .project-bar-dropdown.open { display: flex; }
 
@@ -612,17 +611,13 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
     flex-wrap: wrap;
   }
   .header-content { flex-shrink: 0; }
-  /* Chip bar drops to its own full-width row */
+  /* Project bar toggle stays in the header row — no overflow clipping */
   .header-project-bar {
-    order: 3;
-    flex-basis: 100%;
-    padding: 4px 0 2px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    flex: 1;
+    overflow: visible;      /* MUST be visible so dropdown is not clipped */
+    position: static;       /* dropdown is position:fixed so no relative needed */
   }
-  .header-project-bar::-webkit-scrollbar { display: none; }
-  .project-bar { flex-wrap: nowrap; }
+  .project-bar { flex-wrap: wrap; }
 
   /* --- Project chips --- */
   .project-chip { font-size: 12px; padding: 5px 12px; white-space: nowrap; }
@@ -2176,19 +2171,36 @@ function initializeApp() {
   const refreshBtn = document.getElementById('refreshBtn');
   if (refreshBtn) refreshBtn.addEventListener('click', loadData);
 
-  // Project dropdown toggle
+  // Project dropdown toggle — position:fixed so it escapes overflow clipping
   const projectBarToggle   = document.getElementById('projectBarToggle');
   const projectBarDropdown = document.getElementById('projectBarDropdown');
+
+  function positionDropdown() {
+    if (!projectBarToggle || !projectBarDropdown) return;
+    const rect = projectBarToggle.getBoundingClientRect();
+    projectBarDropdown.style.top  = (rect.bottom + 6) + 'px';
+    projectBarDropdown.style.left = rect.left + 'px';
+    // Clamp so it doesn't go off-screen right edge
+    const dropW = Math.min(360, window.innerWidth - 24);
+    projectBarDropdown.style.width    = dropW + 'px';
+    projectBarDropdown.style.minWidth = '';
+    projectBarDropdown.style.maxWidth = '';
+  }
+
   if (projectBarToggle && projectBarDropdown) {
     projectBarToggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = projectBarDropdown.classList.toggle('open');
-      projectBarToggle.classList.toggle('open', isOpen);
+      const willOpen = !projectBarDropdown.classList.contains('open');
+      if (willOpen) positionDropdown();
+      projectBarDropdown.classList.toggle('open', willOpen);
+      projectBarToggle.classList.toggle('open', willOpen);
     });
   }
   // Close dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.header-project-bar')) closeProjectDropdown();
+    if (!e.target.closest('#projectBarToggle') && !e.target.closest('#projectBarDropdown')) {
+      closeProjectDropdown();
+    }
   });
 
   // Mobile detail back button
