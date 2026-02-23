@@ -73,17 +73,30 @@ body {
 .header {
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-default);
-  padding: 12px 20px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(8px);
+  flex-wrap: wrap;
 }
 
-.header-content { display: flex; align-items: center; gap: 16px; }
+.header-content { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+
+/* Project chip bar inside header */
+.header-project-bar {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  padding: 2px 0;
+}
 
 .logo { display: flex; align-items: center; gap: 8px; }
 
@@ -126,14 +139,20 @@ body {
 }
 body.dark-mode .theme-toggle[title]:hover::after { background: #404040; }
 
-/* ============================================ Filters */
+/* ============================================ Filters (summaries toolbar) */
 .filters {
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-default);
-  padding: 16px 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.filter-group {
+  display: flex; flex-direction: column; min-width: 120px;
 }
 
 .filter-group label {
@@ -145,7 +164,7 @@ body.dark-mode .theme-toggle[title]:hover::after { background: #404040; }
 .filter-group.hidden { display: none; }
 
 select, button.refresh-btn {
-  width: 100%; padding: 8px 12px;
+  width: 100%; padding: 7px 10px;
   background: var(--surface-card);
   border: 1px solid var(--border-default);
   border-radius: 6px; color: var(--text-primary);
@@ -160,15 +179,8 @@ button.refresh-btn {
 }
 button.refresh-btn:hover { background: var(--accent-hover); }
 
-/* ============================================ Project Bar */
-.project-bar-wrapper {
-  background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-default);
-  position: relative;
-}
-
+/* ============================================ Project Bar (now inside header) */
 .project-bar {
-  padding: 10px 20px;
   display: flex; gap: 8px;
   align-items: center;
   flex-wrap: wrap;
@@ -617,8 +629,8 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   display: grid; grid-template-columns: 360px 1fr;
   flex: 1; min-height: 0; overflow: hidden;
 }
-.summaries-layout .sidebar     { height: calc(100vh - 165px); }
-.summaries-layout .detail-panel { height: calc(100vh - 165px); }
+.summaries-layout .sidebar     { height: calc(100vh - 180px); }
+.summaries-layout .detail-panel { height: calc(100vh - 180px); }
 
 /* ============================================ Portfolio View */
 .portfolio-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
@@ -664,7 +676,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
 }
 
 /* ============================================ Datasheet Panel */
-.datasheet-panel { padding: 32px; overflow-y: auto; background: var(--bg-primary); flex: 1; }
+.datasheet-panel { padding: 32px; overflow-y: auto; background: var(--bg-primary); flex: 1; height: calc(100vh - 62px); }
 .datasheet-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
 .datasheet-subtitle { font-size: 12px; color: var(--text-tertiary); margin-bottom: 28px; font-family: 'JetBrains Mono', monospace; }
 .datasheet-section-title {
@@ -697,6 +709,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
 .development-panel {
   padding: 48px 64px; overflow-y: auto; background: var(--bg-primary);
   flex: 1; display: flex; flex-direction: column;
+  height: calc(100vh - 62px);
 }
 .development-panel-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
 .development-panel-subtitle { font-size: 12px; color: var(--text-tertiary); margin-bottom: 40px; font-family: 'JetBrains Mono', monospace; }
@@ -712,7 +725,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
 <body>
 <div class="container">
 
-  <!-- Header -->
+  <!-- Header: logo | project chips | theme toggle -->
   <div class="header">
     <div class="header-content">
       <div class="logo">
@@ -723,58 +736,16 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
         </div>
       </div>
     </div>
-    <div style="display:flex;gap:12px;">
-      <button class="theme-toggle" id="taskViewBtn" title="Master Action Items">📋</button>
+    <!-- Project chips live here -->
+    <div class="header-project-bar">
+      <div id="projectBar" class="project-bar">
+        <button class="project-chip active" data-project="">All Projects</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-shrink:0;">
       <button class="theme-toggle" id="themeToggle" title="Toggle dark / light mode">
         <span id="themeIcon">🌙</span>
       </button>
-    </div>
-  </div>
-
-  <!-- Filter Bar -->
-  <div class="filters" id="mainFilters">
-    <div class="filter-group">
-      <label>Time Period</label>
-      <select id="timeFilter">
-        <option value="1">Last Month</option>
-        <option value="3">Last 3 Months</option>
-        <option value="6">Last 6 Months</option>
-        <option value="12">Last 12 Months</option>
-        <option value="all">All Time</option>
-      </select>
-    </div>
-    <!-- PROJECT dropdown hidden — use project chip bar below -->
-    <div class="filter-group hidden">
-      <label>Project</label>
-      <select id="projectSelect"><option value="">All Projects</option></select>
-    </div>
-    <div class="filter-group">
-      <label>Phase</label>
-      <select id="phaseFilter"><option value="">All Phases</option></select>
-    </div>
-    <div class="filter-group">
-      <label>Category</label>
-      <select id="categoryFilter"><option value="">All Categories</option></select>
-    </div>
-    <div class="filter-group">
-      <label>Status</label>
-      <select id="statusFilter">
-        <option value="">All</option>
-        <option value="Active">Active</option>
-        <option value="Recent">Recent</option>
-        <option value="Archived">Archived</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>&nbsp;</label>
-      <button class="refresh-btn" id="refreshBtn">Refresh</button>
-    </div>
-  </div>
-
-  <!-- Project Chip Bar -->
-  <div class="project-bar-wrapper" id="projectBarWrapper">
-    <div id="projectBar" class="project-bar">
-      <button class="project-chip active" data-project="">All Projects</button>
     </div>
   </div>
 
@@ -783,6 +754,41 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
 
     <!-- Zone 1: Master Task View -->
     <div id="masterTaskView">
+      <!-- Filters toolbar (mirrors summaries toolbar, shares same element IDs via JS sync) -->
+      <div class="filters" style="border-top:none;">
+        <div class="filter-group">
+          <label>Time Period</label>
+          <select id="taskTimeFilter">
+            <option value="1">Last Month</option>
+            <option value="3">Last 3 Months</option>
+            <option value="6">Last 6 Months</option>
+            <option value="12">Last 12 Months</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Phase</label>
+          <select id="taskPhaseFilter"><option value="">All Phases</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Category</label>
+          <select id="taskCategoryFilter"><option value="">All Categories</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="taskStatusFilter">
+            <option value="">All (excl. Archived)</option>
+            <option value="Active">Active</option>
+            <option value="Recent">Recent</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">✕ Close</button>
+        </div>
+      </div>
+      <div style="padding:24px;">
       <div class="master-task-header">
         <h2>Master Action Items</h2>
         <span id="taskCount" class="task-status todo">0 Pending</span>
@@ -802,6 +808,7 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
           <tbody id="masterTasksTableBody"></tbody>
         </table>
       </div>
+      </div><!-- end padding div -->
     </div>
 
     <!-- Zone 2: Portfolio View (All Projects) -->
@@ -842,6 +849,49 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
 
         <!-- Summaries section -->
         <div class="project-section" id="section-summaries">
+          <!-- Summaries toolbar: filters + master tasks button -->
+          <div class="filters" id="mainFilters">
+            <div class="filter-group">
+              <label>Time Period</label>
+              <select id="timeFilter">
+                <option value="1">Last Month</option>
+                <option value="3">Last 3 Months</option>
+                <option value="6">Last 6 Months</option>
+                <option value="12">Last 12 Months</option>
+                <option value="all">All Time</option>
+              </select>
+            </div>
+            <div class="filter-group hidden">
+              <label>Project</label>
+              <select id="projectSelect"><option value="">All Projects</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Phase</label>
+              <select id="phaseFilter"><option value="">All Phases</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Category</label>
+              <select id="categoryFilter"><option value="">All Categories</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Status</label>
+              <select id="statusFilter">
+                <option value="">All</option>
+                <option value="Active">Active</option>
+                <option value="Recent">Recent</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>&nbsp;</label>
+              <button class="refresh-btn" id="refreshBtn">Refresh</button>
+            </div>
+            <div class="filter-group">
+              <label>&nbsp;</label>
+              <button class="refresh-btn" id="taskViewBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">📋 Master Tasks</button>
+            </div>
+          </div>
+          <!-- Card list + detail -->
           <div class="summaries-layout">
             <div class="sidebar" id="sidebar">
               <div class="loading">Loading...</div>
@@ -891,11 +941,6 @@ function setViewMode(mode) {
   const mc = document.getElementById('mainContent');
   mc.classList.remove('mode-portfolio', 'mode-project', 'mode-tasks');
   mc.classList.add('mode-' + mode);
-  const btn = document.getElementById('taskViewBtn');
-  if (btn) {
-    btn.style.background = (mode === 'tasks') ? 'var(--accent-primary)' : '';
-    btn.style.color      = (mode === 'tasks') ? 'white' : '';
-  }
 }
 
 // ============================================
@@ -1623,10 +1668,10 @@ document.querySelectorAll('#masterTaskTable th').forEach(th => {
 });
 
 function renderMasterTasks() {
-  const timeMonths = document.getElementById('timeFilter').value;
-  const phase      = document.getElementById('phaseFilter').value;
-  const category   = document.getElementById('categoryFilter').value;
-  const status     = document.getElementById('statusFilter').value;
+  const timeMonths = document.getElementById('taskTimeFilter').value;
+  const phase      = document.getElementById('taskPhaseFilter').value;
+  const category   = document.getElementById('taskCategoryFilter').value;
+  const status     = document.getElementById('taskStatusFilter').value;
 
   let allPendingTasks = [];
   allData.forEach(item => {
@@ -1638,9 +1683,8 @@ function renderMasterTasks() {
       cutoff.setMonth(cutoff.getMonth() - parseInt(timeMonths));
       if (item.last_updated && new Date(item.last_updated) < cutoff) return;
     }
-    // Project: use chip bar activeProject (takes priority), else hidden projectSelect
-    const projectFilter = activeProject || document.getElementById('projectSelect').value;
-    if (projectFilter && item.project !== projectFilter) return;
+    // Project: use chip bar activeProject
+    if (activeProject && item.project !== activeProject) return;
     if (phase    && item.phase    !== phase)    return;
     if (category && item.category !== category) return;
 
@@ -1709,20 +1753,44 @@ function onMainPhaseFilterChange() {
     categorySelect.innerHTML = '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
   }
   categorySelect.value = '';
-  if (isTaskView) renderMasterTasks();
-  else if (activeProject && activeSection === 'summaries') displayCards();
+  if (activeProject && activeSection === 'summaries') displayCards();
   else if (!activeProject) renderPortfolio();
+}
+
+function onTaskPhaseFilterChange() {
+  const selectedPhase  = document.getElementById('taskPhaseFilter').value;
+  const categorySelect = document.getElementById('taskCategoryFilter');
+  if (!selectedPhase) {
+    const all = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+    categorySelect.innerHTML = '<option value="">All Categories</option>' + all.map(c => '<option>' + esc(c) + '</option>').join('');
+  } else {
+    const cats = getCategoriesForPhase(selectedPhase);
+    categorySelect.innerHTML = '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
+  }
+  categorySelect.value = '';
+  renderMasterTasks();
 }
 
 async function initMasterTasks() {
   try {
     await loadCategoryReference();
-    // No separate master filters to populate — shared filter bar is used instead
-  } catch (error) {
-    if (document.getElementById('masterTasksTableBody')) {
-      document.getElementById('masterTasksTableBody').innerHTML =
-        '<tr><td colspan="6" style="text-align:center;padding:40px;color:#dc2626;">Init Error: ' + error.message + '</td></tr>';
+    // Populate task filter dropdowns
+    const phases = getAllPhases();
+    const taskPhaseEl = document.getElementById('taskPhaseFilter');
+    if (taskPhaseEl) {
+      taskPhaseEl.innerHTML = '<option value="">All Phases</option>' +
+        phases.map(p => '<option>' + esc(p) + '</option>').join('');
     }
+    const cats = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+    const taskCatEl = document.getElementById('taskCategoryFilter');
+    if (taskCatEl) {
+      taskCatEl.innerHTML = '<option value="">All Categories</option>' +
+        cats.map(c => '<option>' + esc(c) + '</option>').join('');
+    }
+  } catch (error) {
+    const tbody = document.getElementById('masterTasksTableBody');
+    if (tbody) tbody.innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:40px;color:#dc2626;">Init Error: ' + error.message + '</td></tr>';
   }
 }
 
@@ -1744,44 +1812,63 @@ function initializeApp() {
   const refreshBtn = document.getElementById('refreshBtn');
   if (refreshBtn) refreshBtn.addEventListener('click', loadData);
 
-  // Task view toggle
-  const taskViewBtn = document.getElementById('taskViewBtn');
-  if (taskViewBtn) {
-    taskViewBtn.addEventListener('click', () => {
-      isTaskView = !isTaskView;
-      if (isTaskView) {
-        setViewMode('tasks');
-        renderMasterTasks();
-      } else {
-        if (!activeProject) {
-          setViewMode('portfolio');
-          renderPortfolio();
-        } else {
-          setViewMode('project');
-          const nameEl = document.getElementById('projectNavName');
-          if (nameEl) nameEl.textContent = formatProjectName(activeProject);
-          switchProjectSection(activeSection);
-        }
-      }
-    });
+  // Helper: open task view
+  function openTaskView() {
+    isTaskView = true;
+    setViewMode('tasks');
+    renderMasterTasks();
+    const btn = document.getElementById('taskViewBtn');
+    if (btn) { btn.style.background = 'var(--accent-primary)'; btn.style.color = 'white'; }
   }
+
+  // Helper: close task view — return to where we were
+  function closeTaskView() {
+    isTaskView = false;
+    if (!activeProject) {
+      setViewMode('portfolio');
+      renderPortfolio();
+    } else {
+      setViewMode('project');
+      const nameEl = document.getElementById('projectNavName');
+      if (nameEl) nameEl.textContent = formatProjectName(activeProject);
+      switchProjectSection(activeSection);
+    }
+    const btn = document.getElementById('taskViewBtn');
+    if (btn) { btn.style.background = ''; btn.style.color = ''; }
+  }
+
+  // 📋 Master Tasks button (inside summaries toolbar)
+  const taskViewBtn = document.getElementById('taskViewBtn');
+  if (taskViewBtn) taskViewBtn.addEventListener('click', openTaskView);
+
+  // ✕ Close button inside master tasks view
+  const taskViewCloseBtn = document.getElementById('taskViewCloseBtn');
+  if (taskViewCloseBtn) taskViewCloseBtn.addEventListener('click', closeTaskView);
 
   // Wire project nav item clicks
   document.querySelectorAll('.project-nav-item').forEach(item => {
     item.addEventListener('click', () => switchProjectSection(item.dataset.section));
   });
 
-  // Phase filter cascades category
+  // Summaries filter listeners
   const phaseFilterEl = document.getElementById('phaseFilter');
   if (phaseFilterEl) phaseFilterEl.addEventListener('change', onMainPhaseFilterChange);
 
   ['timeFilter', 'projectSelect', 'categoryFilter', 'statusFilter'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', () => {
-      if (isTaskView) renderMasterTasks();
-      else if (activeProject && activeSection === 'summaries') displayCards();
+      if (activeProject && activeSection === 'summaries') displayCards();
       else if (!activeProject) renderPortfolio();
     });
+  });
+
+  // Task view filter listeners
+  const taskPhaseEl = document.getElementById('taskPhaseFilter');
+  if (taskPhaseEl) taskPhaseEl.addEventListener('change', onTaskPhaseFilterChange);
+
+  ['taskTimeFilter', 'taskCategoryFilter', 'taskStatusFilter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', renderMasterTasks);
   });
 
   loadData();
