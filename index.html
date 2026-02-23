@@ -1242,6 +1242,11 @@ function switchProjectSection(section) {
     });
     return;
   }
+  // If coming from task view, switch back to project mode
+  if (isTaskView) {
+    isTaskView = false;
+    setViewMode('project');
+  }
   activeSection = section;
   document.querySelectorAll('.project-nav-item').forEach(item => {
     item.classList.toggle('active', item.dataset.section === section);
