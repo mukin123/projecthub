@@ -1153,6 +1153,10 @@ body.mobile-ui .card-meta  { font-size: 11px; }
             <span class="project-nav-icon">📧</span>
             <span class="project-nav-label">Summaries</span>
           </li>
+          <li class="project-nav-item" data-section="tasks">
+            <span class="project-nav-icon">✅</span>
+            <span class="project-nav-label">Tasks</span>
+          </li>
           <li class="project-nav-item" data-section="datasheet">
             <span class="project-nav-icon">📋</span>
             <span class="project-nav-label">Datasheet</span>
@@ -1160,6 +1164,10 @@ body.mobile-ui .card-meta  { font-size: 11px; }
           <li class="project-nav-item" data-section="development">
             <span class="project-nav-icon">🏗️</span>
             <span class="project-nav-label">Development</span>
+          </li>
+          <li class="project-nav-item" data-section="construction">
+            <span class="project-nav-icon">🔨</span>
+            <span class="project-nav-label">Construction</span>
           </li>
         </ul>
       </nav>
@@ -1202,10 +1210,6 @@ body.mobile-ui .card-meta  { font-size: 11px; }
                 <option value="Archived">Archived</option>
               </select>
             </div>
-            <div class="filter-group">
-              <label>&nbsp;</label>
-              <button class="refresh-btn" id="taskViewBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">✅ Pending Tasks</button>
-            </div>
           </div>
           <!-- Card list + detail -->
           <div class="summaries-layout">
@@ -1232,6 +1236,13 @@ body.mobile-ui .card-meta  { font-size: 11px; }
         <!-- Development section -->
         <div class="project-section" id="section-development" style="display:none;">
           <div class="development-panel" id="developmentPanel">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Construction section -->
+        <div class="project-section" id="section-construction" style="display:none;">
+          <div class="development-panel" id="constructionPanel">
             <div class="loading">Loading...</div>
           </div>
         </div>
@@ -1266,19 +1277,23 @@ function setViewMode(mode) {
 // ============================================
 
 function switchProjectSection(section) {
-  activeSection = section;
-  // Close mobile detail if switching away from summaries
   if (section !== 'summaries') closeMobileDetail();
+  if (section === 'tasks') {
+    openTaskView();
+    return;
+  }
+  activeSection = section;
   document.querySelectorAll('.project-nav-item').forEach(item => {
     item.classList.toggle('active', item.dataset.section === section);
   });
-  ['summaries', 'datasheet', 'development'].forEach(s => {
+  ['summaries', 'datasheet', 'development', 'construction'].forEach(s => {
     const el = document.getElementById('section-' + s);
     if (el) el.style.display = (s === section) ? 'flex' : 'none';
   });
-  if (section === 'summaries')        displayCards();
-  else if (section === 'datasheet')   renderDatasheet();
-  else if (section === 'development') renderDevelopmentPanel();
+  if (section === 'summaries')          displayCards();
+  else if (section === 'datasheet')     renderDatasheet();
+  else if (section === 'development')   renderDevelopmentPanel();
+  else if (section === 'construction')  renderConstructionPanel();
 }
 
 // ============================================
@@ -1435,6 +1450,17 @@ function renderDevelopmentPanel() {
     '<div class="development-panel-title">Development Pipeline</div>' +
     '<div class="development-panel-subtitle">' + esc(display) + ' — Stage ' + stageIdx + ' of 4</div>' +
     '<div class="development-stepper-wrap">' + getVerticalStepperHTML(stageIdx) + '</div>';
+}
+
+function renderConstructionPanel() {
+  const panel = document.getElementById('constructionPanel');
+  if (!panel || !activeProject) return;
+  const p = allProjects.find(proj => proj.project === activeProject) || {};
+  const display = formatProjectName(activeProject);
+  panel.innerHTML =
+    '<div class="development-panel-title">Construction Progress</div>' +
+    '<div class="development-panel-subtitle">' + esc(display) + '</div>' +
+    '<div class="development-stepper-wrap">' + getPanelConstructionHTML(p) + '</div>';
 }
 
 // ============================================
