@@ -1457,10 +1457,48 @@ function renderConstructionPanel() {
   if (!panel || !activeProject) return;
   const p = allProjects.find(proj => proj.project === activeProject) || {};
   const display = formatProjectName(activeProject);
+
+  const milestones = [
+    { name: 'Civil Works',   pct: parseInt(p.civil_works_pct)   || 0 },
+    { name: 'PV Ramming',    pct: parseInt(p.pv_ramming_pct)    || 0 },
+    { name: 'PV Mounting',   pct: parseInt(p.pv_mounting_pct)   || 0 },
+    { name: 'BESS Delivery', pct: parseInt(p.bess_pct)          || 0 },
+    { name: 'Electrical',    pct: parseInt(p.electrical_pct)    || 0 },
+    { name: 'Commissioning', pct: parseInt(p.commissioning_pct) || 0 }
+  ];
+  const weights = [5, 10, 15, 40, 20, 10];
+
+  let total = 0;
+  milestones.forEach((m, i) => { total += (m.pct / 100) * weights[i]; });
+  total = Math.round(total);
+
+  let gridHTML = '<div class="milestones-grid">';
+  milestones.forEach(m => {
+    const isDone      = m.pct === 100;
+    const inProgress  = m.pct > 0 && m.pct < 100;
+    const icon        = isDone ? '✓' : (inProgress ? '↻' : '');
+    const checkStyle  = inProgress ? 'style="border-color:var(--accent-primary);color:var(--accent-primary);"' : '';
+    gridHTML +=
+      '<div class="milestone-item ' + (isDone ? 'done' : '') + '">' +
+        '<div class="milestone-checkbox" ' + checkStyle + '>' + icon + '</div>' +
+        '<span>' + esc(m.name) + '</span>' +
+        '<span class="milestone-weight">' + m.pct + '%</span>' +
+      '</div>';
+  });
+  gridHTML += '</div>';
+
   panel.innerHTML =
     '<div class="development-panel-title">Construction Progress</div>' +
     '<div class="development-panel-subtitle">' + esc(display) + '</div>' +
-    '<div class="development-stepper-wrap">' + getPanelConstructionHTML(p) + '</div>';
+    '<div style="display:flex;align-items:flex-start;gap:48px;flex-wrap:wrap;margin-top:8px;">' +
+      '<div class="kpi-ring-container" style="--progress:' + total + '%;">' +
+        '<div class="kpi-ring-inner">' +
+          '<div class="kpi-value">' + total + '%</div>' +
+          '<div class="kpi-label">Done</div>' +
+        '</div>' +
+      '</div>' +
+      gridHTML +
+    '</div>';
 }
 
 // ============================================
