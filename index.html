@@ -170,19 +170,8 @@ button.refresh-btn:hover { background: var(--accent-hover); }
 .project-bar {
   padding: 10px 20px;
   display: flex; gap: 8px;
-  overflow-x: auto; align-items: center;
-  flex-wrap: nowrap;
-  scrollbar-width: none;
-}
-.project-bar::-webkit-scrollbar { display: none; }
-
-/* Right fade to indicate more chips */
-.project-bar-wrapper::after {
-  content: '';
-  position: absolute; right: 0; top: 0; bottom: 0;
-  width: 60px;
-  background: linear-gradient(to right, transparent, var(--bg-elevated));
-  pointer-events: none; z-index: 1;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .project-chip {
@@ -1099,13 +1088,10 @@ function renderProjectBar() {
   projectsFromData.forEach(name => {
     const isActive = activeProject === name;
     const displayName = formatProjectName(name);
-    const meta = projectsMap[name];
-    const statusLabel = meta && meta.status && meta.status !== 'Active' ? ' · ' + meta.status : '';
     html +=
       '<button class="project-chip' + (isActive ? ' active' : '') +
       '" data-project="' + esc(name) + '">' +
         esc(displayName) +
-        (statusLabel ? '<span style="opacity:0.6;font-weight:400;font-size:11px;">' + esc(statusLabel) + '</span>' : '') +
       '</button>';
   });
 
