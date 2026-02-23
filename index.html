@@ -87,16 +87,54 @@ body {
 
 .header-content { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
 
-/* Project chip bar inside header */
+/* Project chip bar — collapsible dropdown */
 .header-project-bar {
   flex: 1;
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
   align-items: center;
   min-width: 0;
-  padding: 2px 0;
+  position: relative;
 }
+
+/* Toggle button that shows current project / "▼ Projects" */
+.project-bar-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px;
+  border: 1px solid var(--border-emphasis);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  font-family: inherit;
+  transition: all 0.15s;
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+}
+.project-bar-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.project-bar-toggle.has-active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
+.project-bar-toggle-arrow { font-size: 10px; flex-shrink: 0; transition: transform 0.2s; }
+.project-bar-toggle.open .project-bar-toggle-arrow { transform: rotate(180deg); }
+
+/* Dropdown panel */
+.project-bar-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  z-index: 150;
+  min-width: 220px;
+  max-width: 360px;
+  max-height: 260px;
+  overflow-y: auto;
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.project-bar-dropdown.open { display: flex; }
 
 .logo { display: flex; align-items: center; gap: 8px; }
 
@@ -179,11 +217,12 @@ button.refresh-btn {
 }
 button.refresh-btn:hover { background: var(--accent-hover); }
 
-/* ============================================ Project Bar (now inside header) */
+/* ============================================ Project Bar (chips inside dropdown) */
 .project-bar {
-  display: flex; gap: 8px;
-  align-items: center;
+  display: flex; gap: 6px;
+  align-items: flex-start;
   flex-wrap: wrap;
+  padding: 0;
 }
 
 .project-chip {
@@ -765,6 +804,61 @@ body.mobile-ui .nav-backdrop {
 }
 body.mobile-ui .nav-backdrop.visible { display: block; }
 
+/* 5. Mobile summaries: accordion-style full-screen layout */
+
+/* On mobile, summaries switches to a single-column full-height list */
+body.mobile-ui .summaries-layout {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: unset;
+  grid-template-rows: unset;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* Card list takes full height, scrollable */
+body.mobile-ui .summaries-layout .sidebar {
+  flex: 1;
+  height: auto;
+  overflow-y: auto;
+  border-right: none;
+  border-bottom: none;
+}
+
+/* Detail panel hidden by default on mobile; JS shows it as full-screen */
+body.mobile-ui .summaries-layout .detail-panel {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 400;
+  background: var(--bg-primary);
+  overflow-y: auto;
+}
+body.mobile-ui .summaries-layout .detail-panel.mobile-detail-open {
+  display: block;
+}
+
+/* Back button shown inside the detail panel on mobile */
+.mobile-detail-back {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: var(--accent-primary);
+  position: sticky; top: 0; z-index: 10;
+}
+.mobile-detail-back:hover { background: var(--surface-hover); }
+body.mobile-ui .mobile-detail-back { display: flex; }
+
+/* Cards on mobile: more generous tap target, show a short preview */
+body.mobile-ui .card { padding: 14px 16px; }
+body.mobile-ui .card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+body.mobile-ui .card-meta  { font-size: 11px; }
+
 /* ============================================ View Mode Classes */
 #portfolioView { display: none; }
 #projectView   { display: none; }
@@ -953,10 +1047,14 @@ body.mobile-ui .nav-backdrop.visible { display: block; }
         </div>
       </div>
     </div>
-    <!-- Project chips live here -->
+    <!-- Project selector: toggle button + dropdown -->
     <div class="header-project-bar">
-      <div id="projectBar" class="project-bar">
-        <button class="project-chip active" data-project="">All Projects</button>
+      <button class="project-bar-toggle" id="projectBarToggle">
+        <span id="projectBarLabel">All Projects</span>
+        <span class="project-bar-toggle-arrow">▼</span>
+      </button>
+      <div class="project-bar-dropdown" id="projectBarDropdown">
+        <div id="projectBar" class="project-bar"></div>
       </div>
     </div>
     <div style="display:flex;gap:12px;flex-shrink:0;">
@@ -1002,12 +1100,12 @@ body.mobile-ui .nav-backdrop.visible { display: block; }
         </div>
         <div class="filter-group">
           <label>&nbsp;</label>
-          <button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">✕ Close</button>
+          <button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">◀ Summaries</button>
         </div>
       </div>
       <div class="master-task-body">
       <div class="master-task-header">
-        <h2>Master Action Items</h2>
+        <h2>Pending Tasks</h2>
         <span id="taskCount" class="task-status todo">0 Pending</span>
       </div>
       <div class="master-tasks-table-wrapper">
@@ -1033,7 +1131,7 @@ body.mobile-ui .nav-backdrop.visible { display: block; }
       <div class="portfolio-header">
         <h2>All Projects</h2>
         <span id="portfolioCount" class="portfolio-count"></span>
-        <button class="refresh-btn" id="taskViewBtnPortfolio" style="margin-left:auto;background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);padding:7px 14px;border-radius:6px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;">📋 Master Tasks</button>
+        <button class="refresh-btn" id="taskViewBtnPortfolio" style="margin-left:auto;background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);padding:7px 14px;border-radius:6px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;">✅ Pending Tasks</button>
       </div>
       <div id="portfolioGrid" class="portfolio-grid"></div>
     </div>
@@ -1114,7 +1212,7 @@ body.mobile-ui .nav-backdrop.visible { display: block; }
             </div>
             <div class="filter-group">
               <label>&nbsp;</label>
-              <button class="refresh-btn" id="taskViewBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">📋 Master Tasks</button>
+              <button class="refresh-btn" id="taskViewBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">✅ Pending Tasks</button>
             </div>
           </div>
           <!-- Card list + detail -->
@@ -1123,6 +1221,8 @@ body.mobile-ui .nav-backdrop.visible { display: block; }
               <div class="loading">Loading...</div>
             </div>
             <div class="detail-panel" id="detailPanel">
+              <!-- Back button (mobile only) -->
+              <div class="mobile-detail-back" id="mobileDetailBack">◀ Back to topics</div>
               <div class="empty-state" style="padding:120px 40px;">
                 Select a card to view details
               </div>
@@ -1175,6 +1275,8 @@ function setViewMode(mode) {
 
 function switchProjectSection(section) {
   activeSection = section;
+  // Close mobile detail if switching away from summaries
+  if (section !== 'summaries') closeMobileDetail();
   document.querySelectorAll('.project-nav-item').forEach(item => {
     item.classList.toggle('active', item.dataset.section === section);
   });
@@ -1534,7 +1636,10 @@ function displayCards() {
     });
   });
 
-  if (filtered.length > 0) document.querySelector('.card').click();
+  // On desktop: auto-open first card. On mobile: leave list visible, user taps to open.
+  if (filtered.length > 0 && !document.body.classList.contains('mobile-ui')) {
+    document.querySelector('.card').click();
+  }
 }
 
 // ============================================
@@ -1607,7 +1712,11 @@ function showDetail(item) {
 
   const phClass = getPhaseClass(item.phase);
 
-  document.getElementById('detailPanel').innerHTML =
+  const detailPanel = document.getElementById('detailPanel');
+
+  // Keep the back button, replace only the content after it
+  const backBtn = document.getElementById('mobileDetailBack');
+  detailPanel.innerHTML =
     '<div class="detail-header">' +
       '<h2>' + esc(item.project) + ' › ' + esc(item.phase || '—') + ' › ' + esc(item.category) + '</h2>' +
       '<div class="detail-meta">' +
@@ -1631,14 +1740,32 @@ function showDetail(item) {
     '<div class="tab-content" id="tasks-content">' + tasksHTML + '</div>' +
     '<div class="tab-content" id="files-content">' + emailsHTML + attachmentsHTML + '</div>';
 
-  document.querySelectorAll('.tab').forEach(tab => {
+  // Re-insert back button at top (innerHTML wiped it)
+  if (backBtn) detailPanel.insertBefore(backBtn, detailPanel.firstChild);
+
+  detailPanel.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', function() {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      detailPanel.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      detailPanel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       this.classList.add('active');
-      document.getElementById(this.dataset.tab + '-content').classList.add('active');
+      detailPanel.querySelector('#' + this.dataset.tab + '-content').classList.add('active');
     });
   });
+
+  // On mobile: open detail as full-screen overlay
+  if (document.body.classList.contains('mobile-ui')) {
+    detailPanel.classList.add('mobile-detail-open');
+    detailPanel.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileDetail() {
+  const detailPanel = document.getElementById('detailPanel');
+  if (detailPanel) detailPanel.classList.remove('mobile-detail-open');
+  document.body.style.overflow = '';
+  // Deselect card
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
 }
 
 function getEmailLinks(item) {
@@ -1723,31 +1850,42 @@ function extractAttachments(item) {
 // ============================================
 
 function renderProjectBar() {
-  const bar = document.getElementById('projectBar');
+  const bar      = document.getElementById('projectBar');
+  const label    = document.getElementById('projectBarLabel');
+  const toggle   = document.getElementById('projectBarToggle');
   if (!bar) return;
 
-  // Derive project names from allData (summaries); enrich with allProjects when available
   const projectsFromData = [...new Set(allData.map(i => i.project).filter(Boolean))].sort();
-  const projectsMap = {};
-  allProjects.forEach(p => { if (p.project) projectsMap[p.project] = p; });
 
   let html = '<button class="project-chip' + (!activeProject ? ' active' : '') +
              '" data-project="">All Projects</button>';
-
   projectsFromData.forEach(name => {
     const isActive = activeProject === name;
     const displayName = formatProjectName(name);
     html +=
       '<button class="project-chip' + (isActive ? ' active' : '') +
-      '" data-project="' + esc(name) + '">' +
-        esc(displayName) +
-      '</button>';
+      '" data-project="' + esc(name) + '">' + esc(displayName) + '</button>';
   });
 
   bar.innerHTML = html;
+
+  // Update toggle button label to reflect current selection
+  if (label) label.textContent = activeProject ? formatProjectName(activeProject) : 'All Projects';
+  if (toggle) toggle.classList.toggle('has-active', !!activeProject);
+
   bar.querySelectorAll('.project-chip').forEach(chip => {
-    chip.addEventListener('click', () => selectProject(chip.dataset.project || null));
+    chip.addEventListener('click', () => {
+      closeProjectDropdown();           // close dropdown after selection
+      selectProject(chip.dataset.project || null);
+    });
   });
+}
+
+function closeProjectDropdown() {
+  const dropdown = document.getElementById('projectBarDropdown');
+  const toggle   = document.getElementById('projectBarToggle');
+  if (dropdown) dropdown.classList.remove('open');
+  if (toggle)   toggle.classList.remove('open');
 }
 
 function selectProject(name) {
@@ -2038,6 +2176,25 @@ function initializeApp() {
   const refreshBtn = document.getElementById('refreshBtn');
   if (refreshBtn) refreshBtn.addEventListener('click', loadData);
 
+  // Project dropdown toggle
+  const projectBarToggle   = document.getElementById('projectBarToggle');
+  const projectBarDropdown = document.getElementById('projectBarDropdown');
+  if (projectBarToggle && projectBarDropdown) {
+    projectBarToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = projectBarDropdown.classList.toggle('open');
+      projectBarToggle.classList.toggle('open', isOpen);
+    });
+  }
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.header-project-bar')) closeProjectDropdown();
+  });
+
+  // Mobile detail back button
+  const mobileDetailBack = document.getElementById('mobileDetailBack');
+  if (mobileDetailBack) mobileDetailBack.addEventListener('click', closeMobileDetail);
+
   // Helper: open task view
   function openTaskView() {
     isTaskView = true;
@@ -2063,11 +2220,11 @@ function initializeApp() {
     if (btn) { btn.style.background = ''; btn.style.color = ''; }
   }
 
-  // 📋 Master Tasks button (inside summaries toolbar)
+  // ✅ Pending Tasks button (inside summaries toolbar)
   const taskViewBtn = document.getElementById('taskViewBtn');
   if (taskViewBtn) taskViewBtn.addEventListener('click', openTaskView);
 
-  // 📋 Master Tasks button (inside portfolio view)
+  // ✅ Pending Tasks button (inside portfolio view)
   const taskViewBtnPortfolio = document.getElementById('taskViewBtnPortfolio');
   if (taskViewBtnPortfolio) taskViewBtnPortfolio.addEventListener('click', openTaskView);
 
