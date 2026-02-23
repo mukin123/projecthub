@@ -866,9 +866,11 @@ body.mobile-ui .card-meta  { font-size: 11px; }
 .main-content.mode-project #portfolioView  { display: none; }
 .main-content.mode-project #masterTaskView { display: none; }
 
-.main-content.mode-tasks #masterTaskView { display: block; overflow-y: auto; flex: 1; }
+.main-content.mode-tasks #masterTaskView { display: flex; flex-direction: column; overflow-y: auto; flex: 1; }
 .main-content.mode-tasks #portfolioView  { display: none; }
-.main-content.mode-tasks #projectView    { display: none; }
+.main-content.mode-tasks #projectView    { display: flex; }
+.main-content.mode-tasks #projectContent { display: none; }
+.main-content.mode-tasks.tasks-from-portfolio .project-nav { display: none; }
 
 /* ============================================ Project Nav Sidebar */
 .project-nav {
@@ -1063,66 +1065,7 @@ body.mobile-ui .card-meta  { font-size: 11px; }
   <!-- Main Content: three mutually exclusive zones -->
   <div class="main-content" id="mainContent">
 
-    <!-- Zone 1: Master Task View -->
-    <div id="masterTaskView">
-      <!-- Filters toolbar (mirrors summaries toolbar, shares same element IDs via JS sync) -->
-      <div class="filters" style="border-top:none;">
-        <div class="filter-group">
-          <label>Time Period</label>
-          <select id="taskTimeFilter">
-            <option value="1">Last Month</option>
-            <option value="3">Last 3 Months</option>
-            <option value="6">Last 6 Months</option>
-            <option value="12">Last 12 Months</option>
-            <option value="all">All Time</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>Phase</label>
-          <select id="taskPhaseFilter"><option value="">All Phases</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Category</label>
-          <select id="taskCategoryFilter"><option value="">All Categories</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Status</label>
-          <select id="taskStatusFilter">
-            <option value="">All (excl. Archived)</option>
-            <option value="Active">Active</option>
-            <option value="Recent">Recent</option>
-            <option value="Archived">Archived</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">◀ Summaries</button>
-        </div>
-      </div>
-      <div class="master-task-body">
-      <div class="master-task-header">
-        <h2>Pending Tasks</h2>
-        <span id="taskCount" class="task-status todo">0 Pending</span>
-      </div>
-      <div class="master-tasks-table-wrapper">
-        <table class="master-tasks-table" id="masterTaskTable">
-          <thead>
-            <tr>
-              <th data-sort="project" style="cursor:pointer;" title="Sort">Project ↕️</th>
-              <th data-sort="phase" style="cursor:pointer;" title="Sort">Phase ↕️</th>
-              <th data-sort="category" style="cursor:pointer;" title="Sort">Category ↕️</th>
-              <th data-sort="description" style="cursor:pointer;" title="Sort">Task Description ↕️</th>
-              <th data-sort="owner" style="cursor:pointer;" title="Sort">Owner ↕️</th>
-              <th data-sort="deadline" style="cursor:pointer;" title="Sort">Deadline ↕️</th>
-            </tr>
-          </thead>
-          <tbody id="masterTasksTableBody"></tbody>
-        </table>
-      </div>
-      </div><!-- end padding div -->
-    </div>
-
-    <!-- Zone 2: Portfolio View (All Projects) -->
+    <!-- Zone 1: Portfolio View (All Projects) -->
     <div id="portfolioView">
       <div class="portfolio-header">
         <h2>All Projects</h2>
@@ -1171,6 +1114,20 @@ body.mobile-ui .card-meta  { font-size: 11px; }
           </li>
         </ul>
       </nav>
+
+      <div id="masterTaskView">
+        <div class="filters" style="border-top:none;">
+          <div class="filter-group"><label>Time Period</label><select id="taskTimeFilter"><option value="1">Last Month</option><option value="3">Last 3 Months</option><option value="6">Last 6 Months</option><option value="12">Last 12 Months</option><option value="all">All Time</option></select></div>
+          <div class="filter-group"><label>Phase</label><select id="taskPhaseFilter"><option value="">All Phases</option></select></div>
+          <div class="filter-group"><label>Category</label><select id="taskCategoryFilter"><option value="">All Categories</option></select></div>
+          <div class="filter-group"><label>Status</label><select id="taskStatusFilter"><option value="">All (excl. Archived)</option><option value="Active">Active</option><option value="Recent">Recent</option><option value="Archived">Archived</option></select></div>
+          <div class="filter-group"><label>&nbsp;</label><button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">&#9664; Summaries</button></div>
+        </div>
+        <div class="master-task-body">
+          <div class="master-task-header"><h2>Pending Tasks</h2><span id="taskCount" class="task-status todo">0 Pending</span></div>
+          <div class="master-tasks-table-wrapper"><table class="master-tasks-table" id="masterTaskTable"><thead><tr><th data-sort="project" style="cursor:pointer;">Project</th><th data-sort="phase" style="cursor:pointer;">Phase</th><th data-sort="category" style="cursor:pointer;">Category</th><th data-sort="description" style="cursor:pointer;">Task Description</th><th data-sort="owner" style="cursor:pointer;">Owner</th><th data-sort="deadline" style="cursor:pointer;">Deadline</th></tr></thead><tbody id="masterTasksTableBody"></tbody></table></div>
+        </div>
+      </div>
 
       <!-- Right: section content -->
       <div class="project-content" id="projectContent">
@@ -2223,6 +2180,9 @@ async function initMasterTasks() {
 
 function openTaskView() {
   isTaskView = true;
+  const mc = document.getElementById('mainContent');
+  if (activeProject) { mc.classList.remove('tasks-from-portfolio'); }
+  else { mc.classList.add('tasks-from-portfolio'); }
   setViewMode('tasks');
   renderMasterTasks();
 }
