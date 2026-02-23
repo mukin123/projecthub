@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Email Intelligence Platform</title>
+<title>ProjectHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -188,13 +188,9 @@ button.refresh-btn:hover { background: var(--accent-hover); }
 
 /* ============================================ Main Layout */
 .main-content {
-  flex: 1; display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 0; min-height: 0;
-}
-
-.main-content.has-project-panel {
-  grid-template-columns: 360px 1fr 300px;
+  flex: 1; display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* ============================================ Sidebar */
@@ -503,12 +499,7 @@ button.refresh-btn:hover { background: var(--accent-hover); }
 .task-responsible { color: var(--accent-primary); font-weight: 500; }
 
 /* ============================================ Master Task View */
-#masterTaskView {
-  display: none; padding: 24px;
-  background: var(--bg-primary); flex: 1;
-  overflow-y: auto; height: calc(100vh - 120px);
-}
-#masterTaskView.active { display: block; grid-column: 1 / -1; }
+#masterTaskView { display: none; background: var(--bg-primary); }
 
 .master-task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .master-task-header h2 { font-size: 20px; color: var(--text-primary); }
@@ -558,12 +549,164 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
 .error-msg { text-align: center; padding: 40px 20px; color: #dc2626; font-size: 13px; }
 
 @media (max-width: 1023px) {
-  .main-content { grid-template-columns: 1fr !important; }
-  .sidebar { height: 300px; }
-  .detail-panel { height: auto; }
-  .project-right-panel { display: none !important; }
+  .summaries-layout { grid-template-columns: 1fr !important; }
+  .summaries-layout .sidebar { height: 300px; }
+  .summaries-layout .detail-panel { height: auto; }
+  .project-nav { display: none; }
+  .portfolio-grid { grid-template-columns: 1fr !important; }
+  .development-panel { padding: 24px; }
 }
-  
+
+/* ============================================ View Mode Classes */
+#portfolioView { display: none; }
+#projectView   { display: none; }
+
+.main-content.mode-portfolio #portfolioView  { display: flex; flex-direction: column; flex: 1; padding: 24px; overflow-y: auto; }
+.main-content.mode-portfolio #projectView    { display: none; }
+.main-content.mode-portfolio #masterTaskView { display: none; }
+
+.main-content.mode-project #projectView    { display: flex; flex: 1; min-height: 0; }
+.main-content.mode-project #portfolioView  { display: none; }
+.main-content.mode-project #masterTaskView { display: none; }
+
+.main-content.mode-tasks #masterTaskView { display: block; padding: 24px; overflow-y: auto; flex: 1; }
+.main-content.mode-tasks #portfolioView  { display: none; }
+.main-content.mode-tasks #projectView    { display: none; }
+
+/* ============================================ Project Nav Sidebar */
+.project-nav {
+  width: 200px; flex-shrink: 0;
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border-default);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.project-nav-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border-default);
+}
+.project-nav-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--text-primary); line-height: 1.3; word-break: break-word;
+}
+.project-nav-list { list-style: none; padding: 8px 0; flex: 1; }
+.project-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+.project-nav-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+.project-nav-item.active {
+  background: var(--surface-hover); color: var(--accent-primary);
+  border-left-color: var(--accent-primary); font-weight: 600;
+}
+.project-nav-icon { font-size: 15px; flex-shrink: 0; }
+.project-nav-label { flex: 1; }
+
+/* ============================================ Project Content Area */
+.project-content {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.project-section {
+  flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+}
+.summaries-layout {
+  display: grid; grid-template-columns: 360px 1fr;
+  flex: 1; min-height: 0; overflow: hidden;
+}
+.summaries-layout .sidebar     { height: calc(100vh - 165px); }
+.summaries-layout .detail-panel { height: calc(100vh - 165px); }
+
+/* ============================================ Portfolio View */
+.portfolio-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.portfolio-header h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+.portfolio-count { font-size: 12px; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; }
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px; align-content: start;
+}
+.portfolio-card {
+  background: var(--surface-card); border: 1px solid var(--border-default);
+  border-radius: 10px; padding: 20px; cursor: pointer;
+  transition: all 0.2s; display: flex; flex-direction: column; gap: 12px;
+}
+.portfolio-card:hover { border-color: var(--accent-primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.portfolio-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.portfolio-card-name { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; flex: 1; }
+.portfolio-card-status {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; padding: 3px 8px; border-radius: 4px; flex-shrink: 0; white-space: nowrap;
+}
+.portfolio-card-status.s-active       { background: rgba(16,185,129,0.12); color: var(--status-active); }
+.portfolio-card-status.s-development  { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.portfolio-card-status.s-construction { background: rgba(249,115,22,0.12); color: #f97316; }
+.portfolio-card-status.s-default      { background: rgba(107,114,128,0.1); color: var(--status-archived); }
+.portfolio-card-meta {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 5px 10px; font-size: 12px;
+}
+.portfolio-meta-label { color: var(--text-tertiary); font-weight: 500; white-space: nowrap; }
+.portfolio-meta-value { color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.portfolio-card-progress { margin-top: 4px; }
+.portfolio-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-bottom: 5px; }
+.portfolio-progress-bar-wrap { background: var(--border-default); border-radius: 4px; height: 6px; overflow: hidden; }
+.portfolio-progress-bar-fill { height: 100%; background: var(--accent-primary); border-radius: 4px; transition: width 0.4s ease; }
+.portfolio-stage-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; background: var(--surface-hover);
+  border: 1px solid var(--border-default); border-radius: 20px;
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+
+/* ============================================ Datasheet Panel */
+.datasheet-panel { padding: 32px; overflow-y: auto; background: var(--bg-primary); flex: 1; }
+.datasheet-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.datasheet-subtitle { font-size: 12px; color: var(--text-tertiary); margin-bottom: 28px; font-family: 'JetBrains Mono', monospace; }
+.datasheet-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-tertiary);
+  margin-bottom: 16px; margin-top: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.datasheet-divider { height: 1px; background: var(--border-default); margin: 24px 0; }
+.datasheet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 0; }
+.datasheet-field { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 8px; padding: 16px; }
+.datasheet-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 8px; }
+.datasheet-field-value { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.datasheet-field-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+.datasheet-construction-table { width: 100%; border-collapse: collapse; background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 8px; overflow: hidden; font-size: 13px; }
+.datasheet-construction-table th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); background: var(--surface-card); border-bottom: 1px solid var(--border-default); }
+.datasheet-construction-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-default); color: var(--text-secondary); vertical-align: middle; }
+.datasheet-construction-table tr:last-child td { border-bottom: none; }
+.datasheet-construction-table tr:hover { background: var(--surface-hover); }
+.construction-pct-cell { font-weight: 600; }
+.construction-pct-cell.cpct-done    { color: var(--status-active); }
+.construction-pct-cell.cpct-partial { color: var(--accent-primary); }
+.construction-pct-cell.cpct-zero    { color: var(--text-tertiary); }
+.inline-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.inline-bar { flex: 1; height: 5px; background: var(--border-default); border-radius: 3px; overflow: hidden; }
+.inline-bar-fill { height: 100%; background: var(--accent-primary); border-radius: 3px; }
+.inline-bar-fill.fill-done { background: var(--status-active); }
+
+/* ============================================ Development Panel */
+.development-panel {
+  padding: 48px 64px; overflow-y: auto; background: var(--bg-primary);
+  flex: 1; display: flex; flex-direction: column;
+}
+.development-panel-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+.development-panel-subtitle { font-size: 12px; color: var(--text-tertiary); margin-bottom: 40px; font-family: 'JetBrains Mono', monospace; }
+.development-stepper-wrap { width: 100%; max-width: 520px; }
+.development-stepper-wrap .step-v { gap: 16px; }
+.development-stepper-wrap .step-v-circle { width: 40px; height: 40px; font-size: 18px; }
+.development-stepper-wrap .step-v-line   { min-height: 36px; }
+.development-stepper-wrap .step-v-label  { font-size: 15px; padding-top: 8px; }
+.development-stepper-wrap .step-v-content { padding-bottom: 28px; }
+
 </style>
 </head>
 <body>
@@ -573,10 +716,10 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   <div class="header">
     <div class="header-content">
       <div class="logo">
-        <div class="logo-icon">📧</div>
+        <div class="logo-icon">🏗️</div>
         <div class="logo-text">
-          <h1>Email Intelligence</h1>
-          <p>Project Management Platform</p>
+          <h1>ProjectHub</h1>
+          <p>Project Management Dashboard</p>
         </div>
       </div>
     </div>
@@ -635,10 +778,10 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
     </div>
   </div>
 
-  <!-- Main Content: sidebar | detail | right-panel -->
+  <!-- Main Content: three mutually exclusive zones -->
   <div class="main-content" id="mainContent">
 
-    <!-- Master Task View (spans all columns when active) -->
+    <!-- Zone 1: Master Task View -->
     <div id="masterTaskView">
       <div class="master-task-header">
         <h2>Master Action Items</h2>
@@ -661,26 +804,71 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
       </div>
     </div>
 
-    <!-- Email Card Sidebar -->
-    <div class="sidebar" id="sidebar">
-      <div class="loading">Loading...</div>
+    <!-- Zone 2: Portfolio View (All Projects) -->
+    <div id="portfolioView">
+      <div class="portfolio-header">
+        <h2>All Projects</h2>
+        <span id="portfolioCount" class="portfolio-count"></span>
+      </div>
+      <div id="portfolioGrid" class="portfolio-grid"></div>
     </div>
 
-    <!-- Email Detail Panel -->
-    <div class="detail-panel" id="detailPanel">
-      <div class="empty-state" style="padding:120px 40px;">
-        Select a card to view details
-      </div>
-    </div>
+    <!-- Zone 3: Project View (single project selected) -->
+    <div id="projectView">
 
-    <!-- Project Right Panel (shown when a project chip is selected) -->
-    <div id="projectDashboard" class="project-right-panel" style="display:none;">
-      <div class="panel-header">
-        <span class="panel-project-name" id="panelProjectName"></span>
-        <span class="collapsed-hint" onclick="toggleProjectPanel()">KPIs</span>
-        <button class="panel-collapse-btn" id="panelCollapseBtn" onclick="toggleProjectPanel()" title="Collapse panel">‹</button>
+      <!-- Left project navigation sidebar -->
+      <nav class="project-nav" id="projectNav">
+        <div class="project-nav-header">
+          <div class="project-nav-name" id="projectNavName"></div>
+        </div>
+        <ul class="project-nav-list">
+          <li class="project-nav-item active" data-section="summaries">
+            <span class="project-nav-icon">📧</span>
+            <span class="project-nav-label">Summaries</span>
+          </li>
+          <li class="project-nav-item" data-section="datasheet">
+            <span class="project-nav-icon">📋</span>
+            <span class="project-nav-label">Datasheet</span>
+          </li>
+          <li class="project-nav-item" data-section="development">
+            <span class="project-nav-icon">🏗️</span>
+            <span class="project-nav-label">Development</span>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Right: section content -->
+      <div class="project-content" id="projectContent">
+
+        <!-- Summaries section -->
+        <div class="project-section" id="section-summaries">
+          <div class="summaries-layout">
+            <div class="sidebar" id="sidebar">
+              <div class="loading">Loading...</div>
+            </div>
+            <div class="detail-panel" id="detailPanel">
+              <div class="empty-state" style="padding:120px 40px;">
+                Select a card to view details
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datasheet section -->
+        <div class="project-section" id="section-datasheet" style="display:none;">
+          <div class="datasheet-panel" id="datasheetPanel">
+            <div class="loading">Loading project data...</div>
+          </div>
+        </div>
+
+        <!-- Development section -->
+        <div class="project-section" id="section-development" style="display:none;">
+          <div class="development-panel" id="developmentPanel">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+
       </div>
-      <div class="panel-body" id="panelBody"></div>
     </div>
 
   </div>
@@ -693,6 +881,196 @@ let allData = [];
 let allEmails = [];
 let allProjects = [];
 let activeProject = null;
+let activeSection = 'summaries'; // 'summaries' | 'datasheet' | 'development'
+
+// ============================================
+// VIEW MODE CONTROLLER
+// ============================================
+
+function setViewMode(mode) {
+  const mc = document.getElementById('mainContent');
+  mc.classList.remove('mode-portfolio', 'mode-project', 'mode-tasks');
+  mc.classList.add('mode-' + mode);
+  const btn = document.getElementById('taskViewBtn');
+  if (btn) {
+    btn.style.background = (mode === 'tasks') ? 'var(--accent-primary)' : '';
+    btn.style.color      = (mode === 'tasks') ? 'white' : '';
+  }
+}
+
+// ============================================
+// PROJECT SECTION NAVIGATION
+// ============================================
+
+function switchProjectSection(section) {
+  activeSection = section;
+  document.querySelectorAll('.project-nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.section === section);
+  });
+  ['summaries', 'datasheet', 'development'].forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el) el.style.display = (s === section) ? 'flex' : 'none';
+  });
+  if (section === 'summaries')   displayCards();
+  else if (section === 'datasheet')   renderDatasheet();
+  else if (section === 'development') renderDevelopmentPanel();
+}
+
+// ============================================
+// PORTFOLIO VIEW
+// ============================================
+
+function renderPortfolio() {
+  const grid    = document.getElementById('portfolioGrid');
+  const countEl = document.getElementById('portfolioCount');
+  if (!grid) return;
+
+  const DEV_STAGE_LABELS = ['Land & Prep', 'Environment', 'Grid Sync', 'Tech Design', 'Permitting'];
+  const projectNames = [...new Set(allData.map(i => i.project).filter(Boolean))].sort();
+  const projectsMap  = {};
+  allProjects.forEach(p => { if (p.project) projectsMap[p.project] = p; });
+
+  if (countEl) countEl.textContent = projectNames.length + ' project' + (projectNames.length !== 1 ? 's' : '');
+
+  if (projectNames.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No projects found. Run Smart Process in Google Sheet.</div>';
+    return;
+  }
+
+  const weights = [5, 10, 15, 40, 20, 10];
+  let html = '';
+
+  projectNames.forEach(name => {
+    const p        = projectsMap[name] || {};
+    const display  = formatProjectName(name);
+    const status   = String(p.status || '—');
+    const location = p.location || '—';
+    const capacity = p.capacity_mw ? p.capacity_mw + ' MW' : '—';
+    const stageIdx = parseInt(p.dev_stage_index) || 0;
+    const stageLabel = DEV_STAGE_LABELS[Math.min(stageIdx, DEV_STAGE_LABELS.length - 1)];
+    const sl = status.toLowerCase();
+    const statusClass = sl.includes('active') ? 's-active' :
+                        sl.includes('develop') ? 's-development' :
+                        sl.includes('construct') ? 's-construction' : 's-default';
+
+    const pctVals = [
+      parseInt(p.civil_works_pct)   || 0,
+      parseInt(p.pv_ramming_pct)    || 0,
+      parseInt(p.pv_mounting_pct)   || 0,
+      parseInt(p.bess_pct)          || 0,
+      parseInt(p.electrical_pct)    || 0,
+      parseInt(p.commissioning_pct) || 0
+    ];
+    let totalPct = 0;
+    pctVals.forEach((v, i) => { totalPct += (v / 100) * weights[i]; });
+    totalPct = Math.round(totalPct);
+    const hasConstruction = pctVals.some(v => v > 0);
+
+    html +=
+      '<div class="portfolio-card" data-project="' + esc(name) + '">' +
+        '<div class="portfolio-card-header">' +
+          '<div class="portfolio-card-name">' + esc(display) + '</div>' +
+          '<div class="portfolio-card-status ' + statusClass + '">' + esc(status) + '</div>' +
+        '</div>' +
+        '<div class="portfolio-card-meta">' +
+          '<div class="portfolio-meta-label">Location</div><div class="portfolio-meta-value">' + esc(location) + '</div>' +
+          '<div class="portfolio-meta-label">Capacity</div><div class="portfolio-meta-value">' + esc(capacity) + '</div>' +
+          '<div class="portfolio-meta-label">Dev Stage</div>' +
+          '<div class="portfolio-meta-value"><span class="portfolio-stage-badge">' + esc(stageLabel) + '</span></div>' +
+        '</div>' +
+        (hasConstruction ?
+          '<div class="portfolio-card-progress">' +
+            '<div class="portfolio-progress-label"><span>Construction</span><span>' + totalPct + '%</span></div>' +
+            '<div class="portfolio-progress-bar-wrap"><div class="portfolio-progress-bar-fill" style="width:' + totalPct + '%"></div></div>' +
+          '</div>' : '') +
+      '</div>';
+  });
+
+  grid.innerHTML = html;
+  grid.querySelectorAll('.portfolio-card').forEach(card => {
+    card.addEventListener('click', () => selectProject(card.dataset.project));
+  });
+}
+
+// ============================================
+// DATASHEET
+// ============================================
+
+function makeDatasheetField(label, value, mono) {
+  return '<div class="datasheet-field">' +
+    '<div class="datasheet-field-label">' + esc(label) + '</div>' +
+    '<div class="datasheet-field-value' + (mono ? ' mono' : '') + '">' + esc(String(value || '—')) + '</div>' +
+  '</div>';
+}
+
+function renderDatasheet() {
+  const panel = document.getElementById('datasheetPanel');
+  if (!panel || !activeProject) return;
+
+  const p = allProjects.find(proj => proj.project === activeProject) || {};
+  const display = formatProjectName(activeProject);
+  const DEV_STAGE_LABELS = ['Land & Prep', 'Environment', 'Grid Sync', 'Tech Design', 'Permitting'];
+  const stageIdx   = parseInt(p.dev_stage_index) || 0;
+  const stageLabel = DEV_STAGE_LABELS[Math.min(stageIdx, DEV_STAGE_LABELS.length - 1)];
+
+  const milestones = [
+    { name: 'Civil Works',   key: 'civil_works_pct',   w: 5  },
+    { name: 'PV Ramming',    key: 'pv_ramming_pct',    w: 10 },
+    { name: 'PV Mounting',   key: 'pv_mounting_pct',   w: 15 },
+    { name: 'BESS Delivery', key: 'bess_pct',          w: 40 },
+    { name: 'Electrical',    key: 'electrical_pct',    w: 20 },
+    { name: 'Commissioning', key: 'commissioning_pct', w: 10 }
+  ];
+  let totalPct = 0;
+  milestones.forEach(m => { totalPct += ((parseInt(p[m.key]) || 0) / 100) * m.w; });
+  totalPct = Math.round(totalPct);
+
+  const cRows = milestones.map(m => {
+    const pct = parseInt(p[m.key]) || 0;
+    const cls = pct === 100 ? 'cpct-done' : (pct > 0 ? 'cpct-partial' : 'cpct-zero');
+    const fillCls = pct === 100 ? ' fill-done' : '';
+    return '<tr>' +
+      '<td>' + esc(m.name) + '</td>' +
+      '<td style="width:45%;"><div class="inline-bar-wrap"><div class="inline-bar"><div class="inline-bar-fill' + fillCls + '" style="width:' + pct + '%"></div></div></div></td>' +
+      '<td class="construction-pct-cell ' + cls + '">' + pct + '%</td>' +
+      '<td style="font-size:11px;color:var(--text-tertiary);">' + m.w + '% wt</td>' +
+    '</tr>';
+  }).join('');
+
+  panel.innerHTML =
+    '<div class="datasheet-title">' + esc(display) + '</div>' +
+    '<div class="datasheet-subtitle">Last updated: ' + esc(formatDate(p.last_updated)) + '</div>' +
+    '<div class="datasheet-section-title">📋 Project Information</div>' +
+    '<div class="datasheet-grid">' +
+      makeDatasheetField('Status', p.status) +
+      makeDatasheetField('Location', p.location) +
+      makeDatasheetField('Capacity', p.capacity_mw ? p.capacity_mw + ' MW' : '—', true) +
+      makeDatasheetField('Dev Stage', stageIdx + ' – ' + stageLabel, true) +
+      makeDatasheetField('Operation Status', p.operation_status) +
+    '</div>' +
+    '<div class="datasheet-divider"></div>' +
+    '<div class="datasheet-section-title">⚙️ Construction Progress — Overall: ' + totalPct + '%</div>' +
+    '<table class="datasheet-construction-table">' +
+      '<thead><tr><th>Milestone</th><th>Progress</th><th>%</th><th>Weight</th></tr></thead>' +
+      '<tbody>' + cRows + '</tbody>' +
+    '</table>';
+}
+
+// ============================================
+// DEVELOPMENT PANEL
+// ============================================
+
+function renderDevelopmentPanel() {
+  const panel = document.getElementById('developmentPanel');
+  if (!panel || !activeProject) return;
+  const p = allProjects.find(proj => proj.project === activeProject) || {};
+  const stageIdx = parseInt(p.dev_stage_index) || 0;
+  const display  = formatProjectName(activeProject);
+  panel.innerHTML =
+    '<div class="development-panel-title">Development Pipeline</div>' +
+    '<div class="development-panel-subtitle">' + esc(display) + ' — Stage ' + stageIdx + ' of 4</div>' +
+    '<div class="development-stepper-wrap">' + getVerticalStepperHTML(stageIdx) + '</div>';
+}
 
 // ============================================
 // HELPERS
@@ -758,7 +1136,9 @@ function toggleTheme() {
 // ============================================
 
 async function loadData() {
-  document.getElementById('sidebar').innerHTML = '<div class="loading">Loading...</div>';
+  setViewMode('portfolio');
+  const grid = document.getElementById('portfolioGrid');
+  if (grid) grid.innerHTML = '<div class="loading">Loading projects...</div>';
 
   try {
     const [summariesRes, emailsRes, projectsRes] = await Promise.all([
@@ -783,12 +1163,6 @@ async function loadData() {
 
     renderProjectBar();
 
-    if (allData.length === 0) {
-      document.getElementById('sidebar').innerHTML =
-        '<div class="empty-state">No data. Run Smart Process in Google Sheet.</div>';
-      return;
-    }
-
     const projects   = [...new Set(allData.map(i => i.project))].filter(Boolean).sort();
     const phases     = [...new Set(allData.map(i => i.phase))].filter(Boolean).sort();
     const categories = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
@@ -805,12 +1179,16 @@ async function loadData() {
       '<option value="">All Categories</option>' +
       categories.map(c => '<option>' + esc(c) + '</option>').join('');
 
-    displayCards();
+    // Boot into portfolio mode
+    setViewMode('portfolio');
+    renderPortfolio();
+
     await initMasterTasks();
 
   } catch (error) {
-    document.getElementById('sidebar').innerHTML =
-      '<div class="error-msg">Error: ' + esc(error.message) + '</div>';
+    setViewMode('portfolio');
+    const grid = document.getElementById('portfolioGrid');
+    if (grid) grid.innerHTML = '<div class="error-msg">Error loading data: ' + esc(error.message) + '</div>';
   }
 }
 
@@ -1106,80 +1484,20 @@ function selectProject(name) {
   renderProjectBar();
   if (isTaskView) {
     renderMasterTasks();
-  } else {
-    renderProjectDashboard();
-    displayCards();
-  }
-}
-
-// ============================================
-// PROJECT RIGHT PANEL
-// ============================================
-
-function toggleProjectPanel() {
-  const panel = document.getElementById('projectDashboard');
-  const btn   = document.getElementById('panelCollapseBtn');
-  if (!panel) return;
-  panel.classList.toggle('collapsed');
-  if (btn) btn.textContent = panel.classList.contains('collapsed') ? '›' : '‹';
-}
-
-function renderProjectDashboard() {
-  const panel      = document.getElementById('projectDashboard');
-  const mainContent = document.getElementById('mainContent');
-  const panelBody  = document.getElementById('panelBody');
-  const nameEl     = document.getElementById('panelProjectName');
-  if (!panel) return;
-
-  if (!activeProject) {
-    panel.style.display = 'none';
-    mainContent.classList.remove('has-project-panel');
     return;
   }
-
-  const project = allProjects.find(p => p.project === activeProject) || {};
-
-  if (nameEl) nameEl.textContent = formatProjectName(activeProject);
-
-  // ── Development ──
-  const stageIndex = parseInt(project.dev_stage_index) || 0;
-  const devHTML = getVerticalStepperHTML(stageIndex);
-
-  // ── Construction ──
-  const allZero = !parseFloat(project.civil_works_pct) &&
-                  !parseFloat(project.pv_ramming_pct) &&
-                  !parseFloat(project.pv_mounting_pct) &&
-                  !parseFloat(project.bess_pct) &&
-                  !parseFloat(project.electrical_pct) &&
-                  !parseFloat(project.commissioning_pct);
-  const constructionHTML = allZero
-    ? '<div class="construction-not-started"><div class="ns-icon">🏗️</div><p>Not started yet</p></div>'
-    : getPanelConstructionHTML(project);
-
-  // ── Operation ──
-  const opStatus = project.operation_status &&
-                   project.operation_status !== '—' &&
-                   project.operation_status !== ''
-    ? '<div class="panel-op-status">🔋 ' + esc(String(project.operation_status)) + '</div>'
-    : '<div class="panel-op-placeholder"><div class="op-icon">🔌</div><p>Coming Soon</p></div>';
-
-  panelBody.innerHTML =
-    '<div class="panel-section">' +
-      '<div class="panel-section-title">🏗️ Development</div>' +
-      devHTML +
-    '</div>' +
-    '<div class="panel-section">' +
-      '<div class="panel-section-title">⚙️ Construction</div>' +
-      constructionHTML +
-    '</div>' +
-    '<div class="panel-section">' +
-      '<div class="panel-section-title">⚡ Operation</div>' +
-      opStatus +
-    '</div>';
-
-  panel.style.display = 'flex';
-  mainContent.classList.add('has-project-panel');
+  if (!activeProject) {
+    setViewMode('portfolio');
+    renderPortfolio();
+  } else {
+    setViewMode('project');
+    const nameEl = document.getElementById('projectNavName');
+    if (nameEl) nameEl.textContent = formatProjectName(activeProject);
+    switchProjectSection(activeSection);
+  }
 }
+
+// (renderProjectDashboard and toggleProjectPanel removed — replaced by section renderers)
 
 /** Vertical stepper for the right panel */
 function getVerticalStepperHTML(stageIndex) {
@@ -1378,82 +1696,7 @@ async function loadCategoryReference() {
 function getAllPhases() { return Object.keys(phaseCategories).sort(); }
 function getCategoriesForPhase(phase) { return phaseCategories[phase] || []; }
 
-function displayMasterTasks() {
-  try {
-    const tasks = buildMasterTasksTable();
-    const pf  = document.getElementById('masterProjectFilter').value;
-    const phf = document.getElementById('masterPhaseFilter').value;
-    const cf  = document.getElementById('masterCategoryFilter').value;
-
-    let filtered = tasks;
-    if (pf)  filtered = filtered.filter(t => t.project  === pf);
-    if (phf) filtered = filtered.filter(t => t.phase    === phf);
-    if (cf)  filtered = filtered.filter(t => t.category === cf);
-
-    document.getElementById('taskCount').textContent = filtered.length + ' PENDING TASKS';
-
-    if (filtered.length === 0) {
-      document.getElementById('masterTasksTableBody').innerHTML =
-        '<tr><td colspan="6" style="text-align:center;padding:60px;color:var(--text-tertiary);">No pending tasks found</td></tr>';
-      return;
-    }
-
-    let html = '';
-    filtered.forEach(task => {
-      html +=
-        '<tr>' +
-          '<td><span class="project-badge">' + esc(formatProjectName(task.project)) + '</span></td>' +
-          '<td><span class="phase-badge">' + esc(task.phase) + '</span></td>' +
-          '<td>' + esc(task.category) + '</td>' +
-          '<td class="master-task-description">' + esc(task.description) + '</td>' +
-          '<td class="master-task-owner">' + esc(task.owner || '—') + '</td>' +
-          '<td class="master-task-deadline">' + esc(task.deadline || '—') + '</td>' +
-        '</tr>';
-    });
-    document.getElementById('masterTasksTableBody').innerHTML = html;
-  } catch (error) {
-    document.getElementById('masterTasksTableBody').innerHTML =
-      '<tr><td colspan="6" style="text-align:center;padding:40px;color:#dc2626;">Error: ' + error.message + '</td></tr>';
-  }
-}
-
-function buildMasterTasksTable() {
-  const allTasks = [];
-  allData.forEach(item => {
-    if (item.action_items && item.action_items !== 'None identified') {
-      const lines = item.action_items.split('\n').filter(l => l.trim());
-      lines.forEach(line => {
-        const cleaned = line.replace(/^[•\-*]\s*/, '').trim();
-        if (cleaned.length > 3) {
-          const ownerMatch    = cleaned.match(/\(Owner:\s*([^)]+)\)/i) || cleaned.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\)/);
-          const deadlineMatch = cleaned.match(/\((\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\w+\s+\d{1,2},?\s*\d{4}?)\)/i);
-          const description   = cleaned.replace(/\([^)]+\)/g, '').trim();
-          allTasks.push({
-            project: item.project, phase: item.phase || 'Unknown', category: item.category,
-            description: description || cleaned,
-            owner: ownerMatch ? ownerMatch[1].trim() : '',
-            deadline: deadlineMatch ? deadlineMatch[1] : ''
-          });
-        }
-      });
-    }
-  });
-  return allTasks;
-}
-
-function onPhaseFilterChange() {
-  const selectedPhase  = document.getElementById('masterPhaseFilter').value;
-  const categorySelect = document.getElementById('masterCategoryFilter');
-  if (!selectedPhase) {
-    const all = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
-    categorySelect.innerHTML = '<option value="">All Categories</option>' + all.map(c => '<option>' + esc(c) + '</option>').join('');
-  } else {
-    const cats = getCategoriesForPhase(selectedPhase);
-    categorySelect.innerHTML = '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
-  }
-  categorySelect.value = '';
-  displayMasterTasks();
-}
+// (displayMasterTasks, buildMasterTasksTable, onPhaseFilterChange removed — replaced by renderMasterTasks with shared filters)
 
 function onMainPhaseFilterChange() {
   const selectedPhase  = document.getElementById('phaseFilter').value;
@@ -1467,7 +1710,8 @@ function onMainPhaseFilterChange() {
   }
   categorySelect.value = '';
   if (isTaskView) renderMasterTasks();
-  else displayCards();
+  else if (activeProject && activeSection === 'summaries') displayCards();
+  else if (!activeProject) renderPortfolio();
 }
 
 async function initMasterTasks() {
@@ -1505,32 +1749,27 @@ function initializeApp() {
   if (taskViewBtn) {
     taskViewBtn.addEventListener('click', () => {
       isTaskView = !isTaskView;
-      const masterView   = document.getElementById('masterTaskView');
-      const sidebar      = document.getElementById('sidebar');
-      const detailPanel  = document.getElementById('detailPanel');
-      const projectPanel = document.getElementById('projectDashboard');
-
       if (isTaskView) {
-        if (sidebar)      sidebar.style.display      = 'none';
-        if (detailPanel)  detailPanel.style.display  = 'none';
-        if (projectPanel) projectPanel.style.display = 'none';
-        if (masterView)   masterView.classList.add('active');
-        taskViewBtn.style.background = 'var(--accent-primary)';
-        taskViewBtn.style.color      = 'white';
+        setViewMode('tasks');
         renderMasterTasks();
       } else {
-        if (sidebar)     sidebar.style.display     = 'block';
-        if (detailPanel) detailPanel.style.display = 'block';
-        if (masterView)  masterView.classList.remove('active');
-        taskViewBtn.style.background = '';
-        taskViewBtn.style.color      = '';
-        // Restore right panel only if a project is selected
-        if (activeProject && projectPanel) {
-          projectPanel.style.display = 'flex';
+        if (!activeProject) {
+          setViewMode('portfolio');
+          renderPortfolio();
+        } else {
+          setViewMode('project');
+          const nameEl = document.getElementById('projectNavName');
+          if (nameEl) nameEl.textContent = formatProjectName(activeProject);
+          switchProjectSection(activeSection);
         }
       }
     });
   }
+
+  // Wire project nav item clicks
+  document.querySelectorAll('.project-nav-item').forEach(item => {
+    item.addEventListener('click', () => switchProjectSection(item.dataset.section));
+  });
 
   // Phase filter cascades category
   const phaseFilterEl = document.getElementById('phaseFilter');
@@ -1540,7 +1779,8 @@ function initializeApp() {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', () => {
       if (isTaskView) renderMasterTasks();
-      else displayCards();
+      else if (activeProject && activeSection === 'summaries') displayCards();
+      else if (!activeProject) renderPortfolio();
     });
   });
 
