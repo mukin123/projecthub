@@ -2177,6 +2177,29 @@ async function initMasterTasks() {
 }
 
 // ============================================
+// TASK VIEW HELPERS (global so switchProjectSection can call them)
+// ============================================
+
+function openTaskView() {
+  isTaskView = true;
+  setViewMode('tasks');
+  renderMasterTasks();
+}
+
+function closeTaskView() {
+  isTaskView = false;
+  if (!activeProject) {
+    setViewMode('portfolio');
+    renderPortfolio();
+  } else {
+    setViewMode('project');
+    const nameEl = document.getElementById('projectNavName');
+    if (nameEl) nameEl.textContent = formatProjectName(activeProject);
+    switchProjectSection(activeSection);
+  }
+}
+
+// ============================================
 // APP INIT
 // ============================================
 
@@ -2229,31 +2252,6 @@ function initializeApp() {
   // Mobile detail back button
   const mobileDetailBack = document.getElementById('mobileDetailBack');
   if (mobileDetailBack) mobileDetailBack.addEventListener('click', closeMobileDetail);
-
-  // Helper: open task view
-  function openTaskView() {
-    isTaskView = true;
-    setViewMode('tasks');
-    renderMasterTasks();
-    const btn = document.getElementById('taskViewBtn');
-    if (btn) { btn.style.background = 'var(--accent-primary)'; btn.style.color = 'white'; }
-  }
-
-  // Helper: close task view — return to where we were
-  function closeTaskView() {
-    isTaskView = false;
-    if (!activeProject) {
-      setViewMode('portfolio');
-      renderPortfolio();
-    } else {
-      setViewMode('project');
-      const nameEl = document.getElementById('projectNavName');
-      if (nameEl) nameEl.textContent = formatProjectName(activeProject);
-      switchProjectSection(activeSection);
-    }
-    const btn = document.getElementById('taskViewBtn');
-    if (btn) { btn.style.background = ''; btn.style.color = ''; }
-  }
 
   // ✅ Pending Tasks button (inside summaries toolbar)
   const taskViewBtn = document.getElementById('taskViewBtn');
