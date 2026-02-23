@@ -1138,7 +1138,6 @@ body.mobile-ui .card-meta  { font-size: 11px; }
       <div id="masterTaskView">
         <!-- Always-visible top bar -->
         <div class="task-topbar">
-          <button class="refresh-btn" id="taskViewCloseBtn" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);">&#9664; Summaries</button>
           <button class="task-filter-toggle" id="taskFilterToggle">&#9881; Filters</button>
         </div>
         <!-- Collapsible filter dropdowns — hidden by default -->
@@ -1159,8 +1158,12 @@ body.mobile-ui .card-meta  { font-size: 11px; }
 
         <!-- Summaries section -->
         <div class="project-section" id="section-summaries">
-          <!-- Summaries toolbar: filters + master tasks button -->
-          <div class="filters" id="mainFilters">
+          <!-- Summaries toolbar toggle bar -->
+          <div class="task-topbar">
+            <button class="task-filter-toggle" id="summaryFilterToggle">&#9881; Filters</button>
+          </div>
+          <!-- Collapsible filters — hidden by default -->
+          <div class="filters" id="mainFilters" style="display:none;">
             <div class="filter-group">
               <label>Time Period</label>
               <select id="timeFilter">
@@ -2292,11 +2295,7 @@ function initializeApp() {
   const taskViewBtnPortfolio = document.getElementById('taskViewBtnPortfolio');
   if (taskViewBtnPortfolio) taskViewBtnPortfolio.addEventListener('click', openTaskView);
 
-  // ✕ Close button inside master tasks view
-  const taskViewCloseBtn = document.getElementById('taskViewCloseBtn');
-  if (taskViewCloseBtn) taskViewCloseBtn.addEventListener('click', closeTaskView);
-
-  // Filters toggle button
+  // Task filters toggle
   const taskFilterToggle = document.getElementById('taskFilterToggle');
   const taskFiltersPanel = document.getElementById('taskFiltersPanel');
   if (taskFilterToggle && taskFiltersPanel) {
@@ -2304,7 +2303,19 @@ function initializeApp() {
       const isOpen = taskFiltersPanel.style.display !== 'none';
       taskFiltersPanel.style.display = isOpen ? 'none' : 'flex';
       taskFilterToggle.classList.toggle('active', !isOpen);
-      taskFilterToggle.textContent = isOpen ? '⚙ Filters' : '✕ Hide Filters';
+      taskFilterToggle.textContent = isOpen ? '\u2699 Filters' : '\u2715 Hide Filters';
+    });
+  }
+
+  // Summaries filters toggle
+  const summaryFilterToggle = document.getElementById('summaryFilterToggle');
+  const mainFilters = document.getElementById('mainFilters');
+  if (summaryFilterToggle && mainFilters) {
+    summaryFilterToggle.addEventListener('click', () => {
+      const isOpen = mainFilters.style.display !== 'none';
+      mainFilters.style.display = isOpen ? 'none' : 'flex';
+      summaryFilterToggle.classList.toggle('active', !isOpen);
+      summaryFilterToggle.textContent = isOpen ? '\u2699 Filters' : '\u2715 Hide Filters';
     });
   }
 
