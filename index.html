@@ -655,20 +655,6 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
         <h2>Master Action Items</h2>
         <span id="taskCount" class="task-status todo">0 Pending</span>
       </div>
-      <div class="filters" style="margin-bottom:20px;">
-        <div class="filter-group">
-          <label>Project</label>
-          <select id="masterProjectFilter"><option value="">All Projects</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Phase</label>
-          <select id="masterPhaseFilter"><option value="">All Phases</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Category</label>
-          <select id="masterCategoryFilter"><option value="">All Categories</option></select>
-        </div>
-      </div>
       <div class="master-tasks-table-wrapper">
         <table class="master-tasks-table" id="masterTaskTable">
           <thead>
@@ -1132,8 +1118,12 @@ function renderProjectBar() {
 function selectProject(name) {
   activeProject = name || null;
   renderProjectBar();
-  renderProjectDashboard();
-  displayCards();
+  if (isTaskView) {
+    renderMasterTasks();
+  } else {
+    renderProjectDashboard();
+    displayCards();
+  }
 }
 
 // ============================================
@@ -1330,19 +1320,23 @@ document.querySelectorAll('#masterTaskTable th').forEach(th => {
 
 function renderMasterTasks() {
   const timeMonths = document.getElementById('timeFilter').value;
-  const project    = document.getElementById('projectSelect').value;
   const phase      = document.getElementById('phaseFilter').value;
   const category   = document.getElementById('categoryFilter').value;
+  const status     = document.getElementById('statusFilter').value;
 
   let allPendingTasks = [];
   allData.forEach(item => {
-    if (item.status === 'Archived') return;
+    // Status filter: default to excluding Archived unless user explicitly picks it
+    if (!status && item.status === 'Archived') return;
+    if (status && item.status !== status) return;
     if (timeMonths !== 'all') {
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - parseInt(timeMonths));
       if (item.last_updated && new Date(item.last_updated) < cutoff) return;
     }
-    if (project  && item.project  !== project)  return;
+    // Project: use chip bar activeProject (takes priority), else hidden projectSelect
+    const projectFilter = activeProject || document.getElementById('projectSelect').value;
+    if (projectFilter && item.project !== projectFilter) return;
     if (phase    && item.phase    !== phase)    return;
     if (category && item.category !== category) return;
 
@@ -1486,32 +1480,14 @@ function onMainPhaseFilterChange() {
     categorySelect.innerHTML = '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
   }
   categorySelect.value = '';
-  displayCards();
   if (isTaskView) renderMasterTasks();
+  else displayCards();
 }
 
 async function initMasterTasks() {
   try {
-    if (!document.getElementById('masterProjectFilter')) return;
     await loadCategoryReference();
-
-    const projects = [...new Set(allData.map(i => i.project))].filter(Boolean).sort();
-    document.getElementById('masterProjectFilter').innerHTML =
-      '<option value="">All Projects</option>' + projects.map(p => '<option>' + esc(p) + '</option>').join('');
-
-    const phases = getAllPhases();
-    document.getElementById('masterPhaseFilter').innerHTML =
-      '<option value="">All Phases</option>' + phases.map(p => '<option>' + esc(p) + '</option>').join('');
-
-    const cats = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
-    document.getElementById('masterCategoryFilter').innerHTML =
-      '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
-
-    document.getElementById('masterProjectFilter').addEventListener('change', displayMasterTasks);
-    document.getElementById('masterPhaseFilter').addEventListener('change', onPhaseFilterChange);
-    document.getElementById('masterCategoryFilter').addEventListener('change', displayMasterTasks);
-
-    displayMasterTasks();
+    // No separate master filters to populate — shared filter bar is used instead
   } catch (error) {
     if (document.getElementById('masterTasksTableBody')) {
       document.getElementById('masterTasksTableBody').innerHTML =
@@ -1548,14 +1524,10 @@ function initializeApp() {
       const detailPanel  = document.getElementById('detailPanel');
       const projectPanel = document.getElementById('projectDashboard');
 
-      const mainFilters  = document.getElementById('mainFilters');
-      const chipBar      = document.getElementById('projectBarWrapper');
       if (isTaskView) {
         if (sidebar)      sidebar.style.display      = 'none';
         if (detailPanel)  detailPanel.style.display  = 'none';
         if (projectPanel) projectPanel.style.display = 'none';
-        if (mainFilters)  mainFilters.style.display  = 'none';
-        if (chipBar)      chipBar.style.display      = 'none';
         if (masterView)   masterView.classList.add('active');
         taskViewBtn.style.background = 'var(--accent-primary)';
         taskViewBtn.style.color      = 'white';
@@ -1563,8 +1535,6 @@ function initializeApp() {
       } else {
         if (sidebar)     sidebar.style.display     = 'block';
         if (detailPanel) detailPanel.style.display = 'block';
-        if (mainFilters) mainFilters.style.display = '';
-        if (chipBar)     chipBar.style.display     = '';
         if (masterView)  masterView.classList.remove('active');
         taskViewBtn.style.background = '';
         taskViewBtn.style.color      = '';
@@ -1583,8 +1553,8 @@ function initializeApp() {
   ['timeFilter', 'projectSelect', 'categoryFilter', 'statusFilter'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', () => {
-      displayCards();
       if (isTaskView) renderMasterTasks();
+      else displayCards();
     });
   });
 
