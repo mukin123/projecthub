@@ -573,78 +573,101 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
     flex-wrap: wrap;
   }
   .header-content { flex-shrink: 0; }
-  /* Chip bar drops to its own row below logo + toggle */
+  /* Chip bar drops to its own full-width row */
   .header-project-bar {
     order: 3;
     flex-basis: 100%;
     padding: 4px 0 2px;
-    overflow-x: auto;           /* allow horizontal scroll if chips overflow */
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;      /* hide scrollbar but keep functionality */
+    scrollbar-width: none;
   }
   .header-project-bar::-webkit-scrollbar { display: none; }
-  .project-bar { flex-wrap: nowrap; }   /* keep chips on one line, scroll rather than wrap */
+  .project-bar { flex-wrap: nowrap; }
 
   /* --- Project chips --- */
   .project-chip { font-size: 12px; padding: 5px 12px; white-space: nowrap; }
 
-  /* --- Show hamburger toggle --- */
+  /* ═══ LEFT NAV — hidden by default on mobile ═══
+     The nav is completely hidden. A floating ☰ FAB
+     reveals a full-screen drawer when tapped.        */
+  .project-nav {
+    display: none;          /* completely hidden — takes no space */
+  }
+
+  /* Floating hamburger button (fixed, always visible in project mode) */
   .nav-toggle-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: 1px solid var(--border-default);
-    border-radius: 6px;
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    z-index: 200;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    font-size: 20px;
     cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 16px;
-    width: 32px; height: 32px;
-    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    transition: background 0.2s, transform 0.2s;
+    line-height: 1;
   }
+  .nav-toggle-btn:hover { background: var(--accent-hover); transform: scale(1.08); }
 
-  /* --- Left nav: 52px icon-only strip by default --- */
-  .project-nav {
-    width: 52px;
-    min-width: 52px;
-    overflow: visible;          /* allow overlay to extend */
-    position: relative;
-    z-index: 40;
-  }
-  .project-nav-header {
-    padding: 10px 0;
-    justify-content: center;
-  }
-  .project-nav-name  { display: none; }
-  .project-nav-item  { padding: 13px 0; justify-content: center; gap: 0; }
-  .project-nav-label { display: none; }
-  .project-nav-icon  { font-size: 20px; }
-
-  /* Expanded nav (JS adds .nav-expanded) — overlays content */
+  /* Full-screen nav drawer (JS adds .nav-expanded) */
   .project-nav.nav-expanded {
-    width: 200px;
-    position: absolute;
-    top: 0; left: 0; bottom: 0;
-    z-index: 50;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.18);
+    display: flex;            /* override hidden */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 300;
+    box-shadow: none;
+    border-right: none;
+    flex-direction: column;
+    overflow-y: auto;
   }
-  .project-nav.nav-expanded .project-nav-name  { display: block; }
-  .project-nav.nav-expanded .project-nav-label { display: block; }
-  .project-nav.nav-expanded .project-nav-header{ padding: 12px 14px; justify-content: space-between; }
-  .project-nav.nav-expanded .project-nav-item  { padding: 11px 16px; justify-content: flex-start; gap: 10px; }
 
-  /* Backdrop: semi-transparent overlay behind expanded nav */
+  /* Header row inside the full-screen drawer */
+  .project-nav.nav-expanded .project-nav-header {
+    padding: 20px 24px 16px;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .project-nav.nav-expanded .project-nav-name  { display: block; font-size: 16px; }
+  .project-nav.nav-expanded .project-nav-label { display: block; }
+  .project-nav.nav-expanded .nav-close-btn     { display: block; }
+  /* Nav items: bigger tap targets */
+  .project-nav.nav-expanded .project-nav-item {
+    padding: 18px 24px;
+    justify-content: flex-start;
+    gap: 16px;
+    font-size: 15px;
+    border-left: 4px solid transparent;
+  }
+  .project-nav.nav-expanded .project-nav-item.active {
+    border-left-color: var(--accent-primary);
+  }
+  .project-nav.nav-expanded .project-nav-icon { font-size: 22px; }
+
+  /* Backdrop covers area BEHIND the drawer (drawer is full-screen so backdrop is mostly cosmetic,
+     but useful for the close-on-outside-tap pattern) */
   .nav-backdrop {
     display: none;
-    position: absolute;
+    position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 45;
+    background: rgba(0,0,0,0.5);
+    z-index: 290;
   }
   .nav-backdrop.visible { display: block; }
 
-  /* project-view needs relative positioning so absolute nav overlays correctly */
-  #projectView { position: relative; }
+  /* project-view: no positioning needed since drawer is fixed */
+  #projectView { position: static; }
+
+  /* Content area: full width (no nav strip stealing space) */
+  .main-content.mode-project #projectView { display: flex; flex: 1; min-height: 0; }
 
   /* --- Summaries layout: card list stacks above detail --- */
   .summaries-layout {
@@ -707,14 +730,10 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   .filter-group { min-width: 100%; flex: 1 1 100%; }
   .filters { padding: 8px 10px; gap: 8px; }
 
-  /* --- Nav-toggle button smaller --- */
-  .nav-toggle-btn { width: 28px; height: 28px; font-size: 14px; }
+  /* --- FAB hamburger slightly smaller --- */
+  .nav-toggle-btn { width: 44px; height: 44px; font-size: 18px; bottom: 20px; right: 16px; }
 
-  /* --- Left nav strip narrower --- */
-  .project-nav { width: 44px; min-width: 44px; }
-  .project-nav-icon { font-size: 17px; }
-
-  /* --- Datasheet table: hide weight col on small screens --- */
+  /* --- Datasheet table: hide weight col --- */
   .datasheet-construction-table th:last-child,
   .datasheet-construction-table td:last-child { display: none; }
 
@@ -780,8 +799,23 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
   color: var(--text-primary); line-height: 1.3; word-break: break-word;
   flex: 1;
 }
-/* Hide toggle on desktop */
+/* Hamburger FAB — hidden on desktop, shown via media query on mobile */
 .nav-toggle-btn { display: none; }
+
+/* ✕ Close button inside the full-screen drawer header */
+.nav-close-btn {
+  display: none;            /* only shown when drawer is open (media query) */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 20px;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.nav-close-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
 
 .project-nav-list { list-style: none; padding: 8px 0; flex: 1; }
 .project-nav-item {
@@ -1006,14 +1040,18 @@ body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; b
     <!-- Zone 3: Project View (single project selected) -->
     <div id="projectView">
 
-      <!-- Backdrop: closes expanded nav when tapped on mobile -->
+      <!-- Floating hamburger FAB (mobile only, shown via CSS when in project mode) -->
+      <button class="nav-toggle-btn" id="navToggleBtn" title="Open menu">&#9776;</button>
+
+      <!-- Full-screen backdrop (mobile: closes nav on tap) -->
       <div class="nav-backdrop" id="navBackdrop"></div>
 
       <!-- Left project navigation sidebar -->
       <nav class="project-nav" id="projectNav">
         <div class="project-nav-header">
           <div class="project-nav-name" id="projectNavName"></div>
-          <button class="nav-toggle-btn" id="navToggleBtn" title="Expand menu">☰</button>
+          <!-- ✕ close button inside the expanded drawer -->
+          <button class="nav-close-btn" id="navCloseBtn" title="Close menu">✕</button>
         </div>
         <ul class="project-nav-list">
           <li class="project-nav-item active" data-section="summaries">
@@ -2036,37 +2074,39 @@ function initializeApp() {
   const taskViewCloseBtn = document.getElementById('taskViewCloseBtn');
   if (taskViewCloseBtn) taskViewCloseBtn.addEventListener('click', closeTaskView);
 
-  // ☰ Left nav toggle (mobile)
+  // Mobile nav: FAB (☰) opens full-screen drawer, ✕ closes it
   const navToggleBtn = document.getElementById('navToggleBtn');
+  const navCloseBtn  = document.getElementById('navCloseBtn');
   const projectNav   = document.getElementById('projectNav');
   const navBackdrop  = document.getElementById('navBackdrop');
 
   function collapseNav() {
     if (!projectNav) return;
     projectNav.classList.remove('nav-expanded');
-    if (navToggleBtn) { navToggleBtn.textContent = '☰'; navToggleBtn.title = 'Expand menu'; }
     if (navBackdrop) navBackdrop.classList.remove('visible');
+    document.body.style.overflow = '';   // restore scroll
   }
 
-  if (navToggleBtn && projectNav) {
-    navToggleBtn.addEventListener('click', () => {
-      const expanded = projectNav.classList.toggle('nav-expanded');
-      navToggleBtn.title = expanded ? 'Collapse menu' : 'Expand menu';
-      navToggleBtn.textContent = expanded ? '✕' : '☰';
-      if (navBackdrop) navBackdrop.classList.toggle('visible', expanded);
-    });
+  function expandNav() {
+    if (!projectNav) return;
+    projectNav.classList.add('nav-expanded');
+    if (navBackdrop) navBackdrop.classList.add('visible');
+    document.body.style.overflow = 'hidden'; // prevent background scroll
   }
+
+  // FAB ☰ opens the drawer
+  if (navToggleBtn) navToggleBtn.addEventListener('click', expandNav);
+
+  // ✕ inside drawer closes it
+  if (navCloseBtn) navCloseBtn.addEventListener('click', collapseNav);
 
   // Tap backdrop to close nav
-  if (navBackdrop) {
-    navBackdrop.addEventListener('click', collapseNav);
-  }
+  if (navBackdrop) navBackdrop.addEventListener('click', collapseNav);
 
-  // Wire project nav item clicks — also collapse nav on mobile after selection
+  // Wire project nav item clicks — collapse after selection on mobile
   document.querySelectorAll('.project-nav-item').forEach(item => {
     item.addEventListener('click', () => {
       switchProjectSection(item.dataset.section);
-      // Collapse on mobile after selecting a section
       if (window.innerWidth <= 900) collapseNav();
     });
   });
