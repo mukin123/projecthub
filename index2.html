@@ -1,0 +1,2349 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjectHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* CSS_Styles.gs - inlined */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #fafafa;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(255,255,255,0.95);
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border-default: #e5e5e5;
+  --border-emphasis: #d4d4d4;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+  --surface-card: #ffffff;
+  --surface-hover: #f5f5f5;
+  --status-active: #10b981;
+  --status-recent: #f59e0b;
+  --status-archived: #6b7280;
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+body.dark-mode {
+  --bg-primary: #0a0a0a;
+  --bg-elevated: #141414;
+  --bg-overlay: rgba(20,20,20,0.95);
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --border-default: #262626;
+  --border-emphasis: #404040;
+  --accent-primary: #3b82f6;
+  --accent-hover: #60a5fa;
+  --surface-card: #171717;
+  --surface-hover: #1f1f1f;
+  --status-active: #10b981;
+  --status-recent: #f59e0b;
+  --status-archived: #6b7280;
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
+}
+
+body {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.container {
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================ Header */
+.header {
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  flex-wrap: wrap;
+}
+
+.header-content { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+
+/* Project chip bar — collapsible dropdown */
+.header-project-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+}
+
+/* Toggle button that shows current project / "▼ Projects" */
+.project-bar-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px;
+  border: 1px solid var(--border-emphasis);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  font-family: inherit;
+  transition: all 0.15s;
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+}
+.project-bar-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.project-bar-toggle.has-active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
+.project-bar-toggle-arrow { font-size: 10px; flex-shrink: 0; transition: transform 0.2s; }
+.project-bar-toggle.open .project-bar-toggle-arrow { transform: rotate(180deg); }
+
+/* Dropdown panel */
+.project-bar-dropdown {
+  position: fixed;          /* fixed so it escapes any overflow:auto parent */
+  top: 56px;                /* will be positioned by JS */
+  left: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  z-index: 9999;            /* always on top */
+  min-width: 220px;
+  max-width: calc(100vw - 24px);
+  max-height: 260px;
+  overflow-y: auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  display: none;            /* hidden by default */
+}
+.project-bar-dropdown.open { display: flex; }
+
+.logo { display: flex; align-items: center; gap: 8px; }
+
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent-primary);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.logo-text h1 { font-size: 16px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
+.logo-text p { font-size: 11px; color: var(--text-tertiary); font-weight: 400; margin-top: 1px; }
+
+.theme-toggle {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.theme-toggle:hover { background: var(--surface-hover); border-color: var(--border-emphasis); }
+
+/* Tooltip */
+.theme-toggle[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -34px; left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a; color: white;
+  font-size: 11px; padding: 4px 8px;
+  border-radius: 4px; white-space: nowrap;
+  z-index: 200; pointer-events: none;
+}
+body.dark-mode .theme-toggle[title]:hover::after { background: #404040; }
+
+/* ============================================ Filters (summaries toolbar) */
+.filters {
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.filter-group {
+  display: flex; flex-direction: column; min-width: 120px;
+}
+
+.filter-group label {
+  display: block; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-tertiary); margin-bottom: 6px;
+}
+
+.filter-group.hidden { display: none; }
+
+select, button.refresh-btn {
+  width: 100%; padding: 7px 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: 6px; color: var(--text-primary);
+  font-size: 13px; font-family: inherit; transition: all 0.15s;
+}
+
+select:hover, select:focus { border-color: var(--border-emphasis); outline: none; }
+
+button.refresh-btn {
+  background: var(--accent-primary); color: white;
+  border: none; font-weight: 500; cursor: pointer;
+}
+button.refresh-btn:hover { background: var(--accent-hover); }
+
+/* ============================================ Project Bar (chips inside dropdown) */
+.project-bar {
+  display: flex; gap: 6px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.project-chip {
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid var(--border-emphasis);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.15s; font-family: inherit; flex-shrink: 0;
+}
+.project-chip:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.project-chip.active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
+
+/* ============================================ Main Layout */
+.main-content {
+  flex: 1; display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ============================================ Sidebar */
+.sidebar {
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border-default);
+  overflow-y: auto;
+  height: calc(100vh - 120px);
+}
+
+.card { padding: 16px 20px; border-bottom: 1px solid var(--border-default); cursor: pointer; transition: all 0.15s; }
+.card:hover { background: var(--surface-hover); }
+.card.selected { background: var(--surface-hover); border-left: 3px solid var(--accent-primary); }
+
+.card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+
+.card-status {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+}
+
+/* Phase-based dot colors */
+.card-status.development { background: #3b82f6; }
+.card-status.construction { background: #f97316; }
+.card-status.financing { background: #a855f7; }
+.card-status.operations { background: var(--status-active); }
+.card-status.general-corporate { background: var(--status-archived); }
+.card-status.active { background: var(--status-active); }
+.card-status.recent { background: var(--status-recent); }
+.card-status.archived { background: var(--status-archived); }
+
+.card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; flex: 1; }
+
+.card-meta {
+  display: flex; gap: 12px; margin-top: 8px;
+  font-size: 11px; color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace; align-items: center;
+}
+
+.card-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* Phase-based badge colors */
+.card-badge.development { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.card-badge.construction { background: rgba(249,115,22,0.12); color: #f97316; }
+.card-badge.financing { background: rgba(168,85,247,0.12); color: #a855f7; }
+.card-badge.operations { background: rgba(16,185,129,0.12); color: var(--status-active); }
+.card-badge.general-corporate { background: rgba(107,114,128,0.12); color: var(--status-archived); }
+.card-badge.active { background: rgba(16,185,129,0.1); color: var(--status-active); }
+.card-badge.recent { background: rgba(245,158,11,0.1); color: var(--status-recent); }
+.card-badge.archived { background: rgba(107,114,128,0.1); color: var(--status-archived); }
+
+/* ============================================ Horizontal Stepper (standalone) */
+.stepper-container {
+  padding: 32px 24px 24px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  display: flex; justify-content: space-between; position: relative;
+}
+
+.stepper-line {
+  position: absolute; top: 48px; left: 10%; right: 10%;
+  height: 2px; background: var(--border-default); z-index: 1;
+}
+.stepper-line-fill {
+  position: absolute; top: 48px; left: 10%;
+  height: 2px; background: var(--accent-primary); z-index: 2; transition: width 0.4s ease;
+}
+.step {
+  position: relative; z-index: 3;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; width: 20%;
+}
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-elevated); border: 2px solid var(--border-emphasis);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text-tertiary); transition: all 0.3s;
+}
+.step.completed .step-circle { background: var(--status-active); border-color: var(--status-active); color: white; }
+.step.active .step-circle { border-color: var(--accent-primary); color: var(--accent-primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.15); background: var(--bg-elevated); }
+.step-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-align: center; text-transform: uppercase; }
+.step.completed .step-label { color: var(--text-primary); }
+.step.active .step-label { color: var(--accent-primary); }
+
+/* ============================================ Vertical Stepper (right panel) */
+.stepper-vertical { display: flex; flex-direction: column; gap: 0; }
+
+.step-v { display: flex; align-items: flex-start; gap: 10px; }
+
+.step-v-left {
+  display: flex; flex-direction: column; align-items: center;
+  width: 22px; flex-shrink: 0;
+}
+.step-v-circle {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg-elevated); border: 2px solid var(--border-emphasis);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--text-tertiary); flex-shrink: 0; transition: all 0.3s;
+}
+.step-v.completed .step-v-circle { background: var(--status-active); border-color: var(--status-active); color: white; }
+.step-v.active .step-v-circle { border-color: var(--accent-primary); color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); background: var(--bg-elevated); }
+
+.step-v-line {
+  width: 2px; min-height: 14px; flex: 1;
+  background: var(--border-default); margin: 2px 0;
+}
+.step-v.completed .step-v-line { background: var(--status-active); }
+
+.step-v-content { padding: 2px 0 14px 0; flex: 1; }
+.step-v:last-child .step-v-content { padding-bottom: 0; }
+
+.step-v-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); line-height: 1.3; }
+.step-v.completed .step-v-label { color: var(--text-primary); }
+.step-v.active .step-v-label { color: var(--accent-primary); }
+
+/* ============================================ Construction KPI Dashboard (standalone) */
+.construction-dashboard {
+  padding: 32px 24px;
+  background: var(--bg-elevated); border-bottom: 1px solid var(--border-default);
+  display: flex; gap: 40px; align-items: center;
+}
+
+.kpi-ring-container {
+  position: relative; width: 140px; height: 140px; border-radius: 50%;
+  background: conic-gradient(var(--accent-primary) var(--progress, 0%), var(--border-default) 0);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: var(--shadow-md);
+}
+.kpi-ring-inner {
+  width: 116px; height: 116px; border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.kpi-value { font-size: 32px; font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+.kpi-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.milestones-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 32px; flex: 1; }
+
+.milestone-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+}
+.milestone-checkbox {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 2px solid var(--border-emphasis);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: transparent; transition: all 0.2s;
+  background: var(--surface-card); flex-shrink: 0;
+}
+.milestone-item.done .milestone-checkbox { background: var(--status-active); border-color: var(--status-active); color: white; }
+.milestone-item.done span { color: var(--text-primary); }
+.milestone-weight {
+  font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+  background: var(--surface-hover); padding: 2px 8px; border-radius: 12px; margin-left: auto; flex-shrink: 0;
+}
+
+/* ============================================ Right Project Panel */
+.project-right-panel {
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border-default);
+  height: calc(100vh - 120px);
+  overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column;
+  width: 300px;
+  transition: width 0.3s ease;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-emphasis) transparent;
+}
+.project-right-panel::-webkit-scrollbar { width: 4px; }
+.project-right-panel::-webkit-scrollbar-track { background: transparent; }
+.project-right-panel::-webkit-scrollbar-thumb { background: var(--border-emphasis); border-radius: 2px; }
+
+.project-right-panel.collapsed { width: 40px; overflow: hidden; }
+
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 12px 12px;
+  border-bottom: 1px solid var(--border-default);
+  position: sticky; top: 0; background: var(--bg-elevated); z-index: 5; gap: 8px;
+}
+.panel-project-name {
+  font-size: 12px; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
+}
+.panel-collapse-btn {
+  width: 26px; height: 26px; border-radius: 5px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-card); color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0; transition: all 0.2s; font-family: inherit;
+}
+.panel-collapse-btn:hover { background: var(--surface-hover); border-color: var(--border-emphasis); color: var(--text-primary); }
+
+.project-right-panel.collapsed .panel-project-name { display: none; }
+
+.collapsed-hint {
+  display: none; writing-mode: vertical-rl;
+  font-size: 10px; font-weight: 700; color: var(--text-tertiary);
+  padding: 12px 0; cursor: pointer;
+  letter-spacing: 0.08em; text-transform: uppercase; text-align: center; width: 100%;
+}
+.project-right-panel.collapsed .collapsed-hint { display: block; }
+
+.panel-body { padding: 0; flex: 1; }
+.project-right-panel.collapsed .panel-body { display: none; }
+
+.panel-section { padding: 16px; border-bottom: 1px solid var(--border-default); }
+.panel-section:last-child { border-bottom: none; }
+
+.panel-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* KPI ring inside right panel */
+.panel-kpi-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.panel-kpi-wrap .kpi-ring-container { width: 80px; height: 80px; }
+.panel-kpi-wrap .kpi-ring-inner { width: 64px; height: 64px; }
+.panel-kpi-wrap .kpi-value { font-size: 18px; }
+.panel-kpi-wrap .kpi-label { font-size: 9px; }
+
+.panel-milestones { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+
+.panel-milestone-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-secondary);
+}
+.panel-milestone-item .milestone-checkbox { width: 16px; height: 16px; border-radius: 4px; font-size: 9px; flex-shrink: 0; }
+.panel-milestone-item .m-name { flex: 1; line-height: 1.3; }
+.panel-milestone-item .m-pct { font-weight: 700; font-size: 11px; flex-shrink: 0; }
+.panel-milestone-item.done .m-pct { color: var(--status-active); }
+.panel-milestone-item:not(.done) .m-pct { color: var(--accent-primary); }
+
+/* Not started construction state */
+.construction-not-started {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 16px 0; color: var(--text-tertiary); text-align: center;
+}
+.construction-not-started .ns-icon { font-size: 28px; opacity: 0.4; }
+.construction-not-started p { font-size: 12px; font-weight: 500; }
+
+/* Operation in panel */
+.panel-op-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 0; color: var(--text-tertiary); text-align: center; }
+.panel-op-placeholder .op-icon { font-size: 24px; opacity: 0.4; }
+.panel-op-placeholder p { font-size: 12px; font-weight: 500; }
+
+.panel-op-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; background: rgba(16,185,129,0.1);
+  color: var(--status-active); border-radius: 6px; font-size: 12px; font-weight: 600;
+}
+
+/* ============================================ Detail Panel */
+.detail-panel { background: var(--bg-primary); overflow-y: auto; height: calc(100vh - 120px); }
+
+.detail-header { background: var(--bg-elevated); padding: 24px; border-bottom: 1px solid var(--border-default); }
+
+.detail-header h2 { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; line-height: 1.3; }
+
+.detail-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+.detail-meta-item { display: flex; align-items: center; gap: 6px; }
+
+/* ============================================ Tabs */
+.tabs { display: flex; gap: 2px; background: var(--bg-elevated); border-bottom: 1px solid var(--border-default); padding: 0 24px; }
+.tab { padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+.tab-content { display: none; padding: 24px; }
+.tab-content.active { display: block; }
+
+/* ============================================ Section / Email / Summary */
+.section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-divider { height: 1px; background: var(--border-default); margin: 32px 0; }
+
+.email-list { display: flex; flex-direction: column; gap: 12px; }
+.email-item { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 8px; padding: 16px; text-decoration: none; color: inherit; transition: all 0.2s; display: block; }
+.email-item:hover { border-color: var(--accent-primary); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.email-item-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; gap: 12px; }
+.email-item-title { font-size: 13px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+.email-item-icon { font-size: 16px; }
+.email-item-meta { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; font-size: 11px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+.email-meta-label { color: var(--text-tertiary); font-weight: 500; }
+.email-meta-value { color: var(--text-secondary); }
+
+.summary-section { margin-bottom: 32px; }
+.summary-section h3 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
+.summary-section p, .summary-section pre { font-size: 13px; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; font-family: inherit; }
+
+/* ============================================ Tasks Table */
+.tasks-table-wrapper { overflow-x: auto; border: 1px solid var(--border-default); border-radius: 8px; }
+.tasks-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tasks-table thead { background: var(--surface-card); border-bottom: 1px solid var(--border-default); }
+.tasks-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); }
+.tasks-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-default); color: var(--text-secondary); }
+.tasks-table tr:last-child td { border-bottom: none; }
+.tasks-table tr:hover { background: var(--surface-hover); }
+.task-status { display: inline-flex; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.task-status.done { background: rgba(16,185,129,0.1); color: var(--status-active); }
+.task-status.todo { background: rgba(245,158,11,0.1); color: var(--status-recent); }
+.task-description { color: var(--text-primary); font-weight: 500; }
+.task-responsible { color: var(--accent-primary); font-weight: 500; }
+
+/* ============================================ Master Task View */
+#masterTaskView { display: none; background: var(--bg-primary); }
+
+.task-topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.task-filter-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 6px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 13px; font-family: inherit;
+  cursor: pointer; transition: all 0.15s;
+}
+.task-filter-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.task-filter-toggle.active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
+
+.master-task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.master-task-header h2 { font-size: 20px; color: var(--text-primary); }
+
+/* Project color tags */
+.tag-color-0 { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
+.tag-color-1 { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.tag-color-2 { background: #ffedd5; color: #9a3412; border-color: #fed7aa; }
+.tag-color-3 { background: #fae8ff; color: #86198f; border-color: #f5d0fe; }
+.tag-color-4 { background: #cffafe; color: #155e75; border-color: #a5f3fc; }
+.tag-color-5 { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+.tag-color-6 { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+
+body.dark-mode .tag-color-0 { background: rgba(99,102,241,0.2); color: #a5b4fc; border-color: rgba(99,102,241,0.3); }
+body.dark-mode .tag-color-1 { background: rgba(34,197,94,0.2); color: #86efac; border-color: rgba(34,197,94,0.3); }
+body.dark-mode .tag-color-2 { background: rgba(249,115,22,0.2); color: #fdba74; border-color: rgba(249,115,22,0.3); }
+body.dark-mode .tag-color-3 { background: rgba(217,70,239,0.2); color: #f0abfc; border-color: rgba(217,70,239,0.3); }
+body.dark-mode .tag-color-4 { background: rgba(6,182,212,0.2); color: #67e8f9; border-color: rgba(6,182,212,0.3); }
+body.dark-mode .tag-color-5 { background: rgba(236,72,153,0.2); color: #f9a8d4; border-color: rgba(236,72,153,0.3); }
+body.dark-mode .tag-color-6 { background: rgba(234,179,8,0.2); color: #fde047; border-color: rgba(234,179,8,0.3); }
+
+/* Master tasks table */
+.master-tasks-table-wrapper { overflow-x: auto; border: 1px solid var(--border-default); border-radius: 8px; background: var(--surface-card); }
+.master-tasks-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.master-tasks-table thead { position: sticky; top: 0; z-index: 10; background: var(--surface-card); }
+.master-tasks-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); border-bottom: 2px solid var(--border-default); white-space: nowrap; }
+.master-tasks-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-default); color: var(--text-secondary); vertical-align: top; }
+.master-tasks-table tr:hover { background: var(--surface-hover); }
+
+.project-badge { display: inline-block; padding: 4px 10px; background: rgba(37,99,235,0.1); color: var(--accent-primary); border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+.phase-badge { display: inline-block; padding: 4px 10px; background: rgba(16,185,129,0.1); color: var(--status-active); border-radius: 4px; font-size: 11px; font-weight: 600; }
+.master-task-description { max-width: 400px; line-height: 1.5; color: var(--text-primary); }
+.master-task-owner { font-weight: 600; color: var(--accent-primary); }
+.master-task-deadline { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.master-task-body { padding: 24px; }
+
+/* ============================================ Attachments */
+.attachments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.attachment-card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 8px; padding: 16px; text-align: center; text-decoration: none; color: inherit; transition: all 0.2s; display: block; }
+.attachment-card:hover { border-color: var(--accent-primary); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.attachment-icon { font-size: 32px; margin-bottom: 8px; }
+.attachment-name { font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; word-break: break-word; }
+.attachment-type { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ============================================ Utilities */
+.loading { text-align: center; padding: 60px 20px; color: var(--text-tertiary); font-size: 13px; }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); font-size: 13px; }
+.error-msg { text-align: center; padding: 40px 20px; color: #dc2626; font-size: 13px; }
+
+/* ============================================ Responsive */
+
+/* ── Tablet  (≤ 900px) ── */
+@media (max-width: 900px) {
+
+  /* --- Header --- */
+  .header {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .header-content { flex-shrink: 0; }
+  /* Project bar toggle stays in the header row — no overflow clipping */
+  .header-project-bar {
+    flex: 1;
+    overflow: visible;      /* MUST be visible so dropdown is not clipped */
+    position: static;       /* dropdown is position:fixed so no relative needed */
+  }
+  .project-bar { flex-wrap: wrap; }
+
+  /* --- Project chips --- */
+  .project-chip { font-size: 12px; padding: 5px 12px; white-space: nowrap; }
+
+  /* tablet layout tweaks only — nav behaviour handled by body.mobile-ui below */
+
+  /* --- Summaries layout: card list stacks above detail --- */
+  .summaries-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 260px 1fr;
+  }
+  .summaries-layout .sidebar {
+    height: 260px;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .summaries-layout .detail-panel {
+    height: auto;
+    min-height: 200px;
+    overflow-y: auto;
+  }
+
+  /* --- Filters bar: 2 per row --- */
+  .filter-group { min-width: 140px; flex: 1 1 calc(50% - 10px); }
+
+  /* --- Portfolio: 2 columns on tablet --- */
+  .portfolio-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  /* --- Panels padding --- */
+  .development-panel { padding: 24px 20px; }
+  .datasheet-panel   { padding: 20px; }
+
+  /* --- Master tasks content --- */
+  .master-task-body { padding: 16px; }
+  .master-tasks-table-wrapper { overflow-x: auto; }
+}
+
+/* ── Mobile  (≤ 600px) ── */
+@media (max-width: 600px) {
+
+  /* --- Header tightened --- */
+  .header { padding: 6px 10px; gap: 6px; }
+  .logo-text p  { display: none; }
+  .logo-text h1 { font-size: 14px; }
+  .logo-icon    { width: 28px; height: 28px; font-size: 15px; }
+  .theme-toggle { width: 32px; height: 32px; font-size: 14px; }
+
+  /* --- Chips: small, horizontal scroll --- */
+  .project-chip { font-size: 11px; padding: 4px 10px; }
+
+  /* --- Portfolio: 1 column --- */
+  .portfolio-grid { grid-template-columns: 1fr; }
+  .portfolio-header { gap: 8px; }
+  .portfolio-header h2 { font-size: 16px; }
+
+  /* --- Portfolio view padding --- */
+  .main-content.mode-portfolio #portfolioView { padding: 12px; }
+
+  /* --- Summaries: shorter card list --- */
+  .summaries-layout { grid-template-rows: 220px 1fr; }
+  .summaries-layout .sidebar { height: 220px; }
+
+  /* --- Filter bar: full-width stacked --- */
+  .filter-group { min-width: 100%; flex: 1 1 100%; }
+  .filters { padding: 8px 10px; gap: 8px; }
+
+  /* --- Datasheet table: hide weight col --- */
+  .datasheet-construction-table th:last-child,
+  .datasheet-construction-table td:last-child { display: none; }
+
+  /* --- Master tasks: hide Phase + Category cols --- */
+  .master-tasks-table th:nth-child(2),
+  .master-tasks-table td:nth-child(2),
+  .master-tasks-table th:nth-child(3),
+  .master-tasks-table td:nth-child(3) { display: none; }
+
+  /* --- Master tasks content --- */
+  .master-task-body { padding: 12px; }
+  .master-task-header h2 { font-size: 16px; }
+  .master-tasks-table-wrapper { overflow-x: auto; }
+
+  /* --- Detail panel header smaller --- */
+  .detail-header h2 { font-size: 14px; }
+
+  /* --- Development panel --- */
+  .development-panel { padding: 16px 14px; }
+  .development-panel-title { font-size: 16px; }
+  .development-stepper-wrap .step-v-circle { width: 32px; height: 32px; font-size: 15px; }
+  .development-stepper-wrap .step-v-label  { font-size: 13px; }
+
+  /* --- Datasheet panel --- */
+  .datasheet-panel { padding: 14px; }
+  .datasheet-title { font-size: 16px; }
+  .datasheet-grid  { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .datasheet-field-value { font-size: 13px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE NAV — driven by JS class (body.mobile-ui)
+   JS sets this class when window.innerWidth <= 900.
+   Using a JS class instead of @media avoids breakpoint
+   issues with browser zoom on real mobile devices.
+   ══════════════════════════════════════════════════════════ */
+
+/* 1. Hide the sidebar nav completely — takes zero space */
+body.mobile-ui .project-nav {
+  display: none !important;
+}
+
+/* 2. Show the floating ☰ FAB button */
+body.mobile-ui .nav-toggle-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 200;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: background 0.2s, transform 0.15s;
+  line-height: 1;
+}
+body.mobile-ui .nav-toggle-btn:hover,
+body.mobile-ui .nav-toggle-btn:active {
+  background: var(--accent-hover);
+  transform: scale(1.08);
+}
+
+/* 3. Full-screen drawer when .nav-expanded is added by JS */
+body.mobile-ui .project-nav.nav-expanded {
+  display: flex !important;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 500;
+  border-right: none;
+  box-shadow: none;
+  flex-direction: column;
+  overflow-y: auto;
+}
+body.mobile-ui .project-nav.nav-expanded .project-nav-header {
+  padding: 24px 24px 18px;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-default);
+}
+body.mobile-ui .project-nav.nav-expanded .project-nav-name {
+  display: block;
+  font-size: 18px;
+}
+body.mobile-ui .project-nav.nav-expanded .project-nav-label { display: block; }
+body.mobile-ui .project-nav.nav-expanded .nav-close-btn    { display: flex; }
+body.mobile-ui .project-nav.nav-expanded .project-nav-item {
+  padding: 20px 28px;
+  justify-content: flex-start;
+  gap: 18px;
+  font-size: 16px;
+  border-left: 4px solid transparent;
+}
+body.mobile-ui .project-nav.nav-expanded .project-nav-item.active {
+  border-left-color: var(--accent-primary);
+}
+body.mobile-ui .project-nav.nav-expanded .project-nav-icon { font-size: 24px; }
+
+/* 4. Full-screen backdrop */
+body.mobile-ui .nav-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 490;
+}
+body.mobile-ui .nav-backdrop.visible { display: block; }
+
+/* 5. Mobile summaries: accordion-style full-screen layout */
+
+/* On mobile, summaries switches to a single-column full-height list */
+body.mobile-ui .summaries-layout {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: unset;
+  grid-template-rows: unset;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* Card list takes full height, scrollable */
+body.mobile-ui .summaries-layout .sidebar {
+  flex: 1;
+  height: auto;
+  overflow-y: auto;
+  border-right: none;
+  border-bottom: none;
+}
+
+/* Detail panel hidden by default on mobile; JS shows it as full-screen */
+body.mobile-ui .summaries-layout .detail-panel {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 400;
+  background: var(--bg-primary);
+  overflow-y: auto;
+}
+body.mobile-ui .summaries-layout .detail-panel.mobile-detail-open {
+  display: block;
+}
+
+/* Back button shown inside the detail panel on mobile */
+.mobile-detail-back {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: var(--accent-primary);
+  position: sticky; top: 0; z-index: 10;
+}
+.mobile-detail-back:hover { background: var(--surface-hover); }
+body.mobile-ui .mobile-detail-back { display: flex; }
+
+/* Cards on mobile: more generous tap target, show a short preview */
+body.mobile-ui .card { padding: 14px 16px; }
+body.mobile-ui .card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+body.mobile-ui .card-meta  { font-size: 11px; }
+
+/* ============================================ View Mode Classes */
+#portfolioView { display: none; }
+#projectView   { display: none; }
+
+.main-content.mode-portfolio #portfolioView  { display: flex; flex-direction: column; flex: 1; padding: 24px; overflow-y: auto; }
+.main-content.mode-portfolio #projectView    { display: none; }
+.main-content.mode-portfolio #masterTaskView { display: none; }
+
+.main-content.mode-project #projectView    { display: flex; flex: 1; min-height: 0; }
+.main-content.mode-project #portfolioView  { display: none; }
+.main-content.mode-project #masterTaskView { display: none; }
+
+.main-content.mode-tasks #masterTaskView { display: flex; flex-direction: column; overflow-y: auto; flex: 1; }
+.main-content.mode-tasks #portfolioView  { display: none; }
+.main-content.mode-tasks #projectView    { display: flex; flex: 1; min-height: 0; }
+.main-content.mode-tasks #projectContent { display: none; }
+.main-content.mode-tasks.tasks-from-portfolio .project-nav { display: none; }
+
+/* ============================================ Project Nav Sidebar */
+.project-nav {
+  width: 200px; flex-shrink: 0;
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border-default);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  transition: width 0.22s ease;
+}
+.project-nav-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex; align-items: center; gap: 8px;
+}
+.project-nav-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--text-primary); line-height: 1.3; word-break: break-word;
+  flex: 1;
+}
+/* Hamburger FAB — hidden on desktop, shown via media query on mobile */
+.nav-toggle-btn { display: none; }
+
+/* ✕ Close button inside the full-screen drawer header */
+.nav-close-btn {
+  display: none;            /* only shown when drawer is open (media query) */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 20px;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.nav-close-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+.project-nav-list { list-style: none; padding: 8px 0; flex: 1; }
+.project-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+.project-nav-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+.project-nav-item.active {
+  background: var(--surface-hover); color: var(--accent-primary);
+  border-left-color: var(--accent-primary); font-weight: 600;
+}
+.project-nav-icon { font-size: 15px; flex-shrink: 0; }
+.project-nav-label { flex: 1; }
+
+/* ============================================ Project Content Area */
+.project-content {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.project-section {
+  flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+}
+.summaries-layout {
+  display: grid; grid-template-columns: 360px 1fr;
+  flex: 1; min-height: 0; overflow: hidden;
+}
+.summaries-layout .sidebar     { height: calc(100vh - 180px); }
+.summaries-layout .detail-panel { height: calc(100vh - 180px); }
+
+/* ============================================ Portfolio View */
+.portfolio-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.portfolio-header h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+.portfolio-count { font-size: 12px; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; }
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px; align-content: start;
+}
+.portfolio-card {
+  background: var(--surface-card); border: 1px solid var(--border-default);
+  border-radius: 10px; padding: 20px; cursor: pointer;
+  transition: all 0.2s; display: flex; flex-direction: column; gap: 12px;
+}
+.portfolio-card:hover { border-color: var(--accent-primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.portfolio-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.portfolio-card-name { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; flex: 1; }
+.portfolio-card-status {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; padding: 3px 8px; border-radius: 4px; flex-shrink: 0; white-space: nowrap;
+}
+.portfolio-card-status.s-active       { background: rgba(16,185,129,0.12); color: var(--status-active); }
+.portfolio-card-status.s-development  { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.portfolio-card-status.s-construction { background: rgba(249,115,22,0.12); color: #f97316; }
+.portfolio-card-status.s-default      { background: rgba(107,114,128,0.1); color: var(--status-archived); }
+.portfolio-card-meta {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 5px 10px; font-size: 12px;
+}
+.portfolio-meta-label { color: var(--text-tertiary); font-weight: 500; white-space: nowrap; }
+.portfolio-meta-value { color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.portfolio-card-progress { margin-top: 4px; }
+.portfolio-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-bottom: 5px; }
+.portfolio-progress-bar-wrap { background: var(--border-default); border-radius: 4px; height: 6px; overflow: hidden; }
+.portfolio-progress-bar-fill { height: 100%; background: var(--accent-primary); border-radius: 4px; transition: width 0.4s ease; }
+.portfolio-stage-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; background: var(--surface-hover);
+  border: 1px solid var(--border-default); border-radius: 20px;
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+
+/* ============================================ Datasheet Panel */
+.datasheet-panel { padding: 32px; overflow-y: auto; background: var(--bg-primary); flex: 1; height: calc(100vh - 62px); }
+.datasheet-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.datasheet-subtitle { font-size: 12px; color: var(--text-tertiary); margin-bottom: 28px; font-family: 'JetBrains Mono', monospace; }
+.datasheet-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-tertiary);
+  margin-bottom: 16px; margin-top: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.datasheet-divider { height: 1px; background: var(--border-default); margin: 24px 0; }
+.datasheet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 0; }
+.datasheet-field { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 8px; padding: 16px; }
+.datasheet-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 8px; }
+.datasheet-field-value { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.datasheet-field-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+.datasheet-construction-table { width: 100%; border-collapse: collapse; background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 8px; overflow: hidden; font-size: 13px; }
+.datasheet-construction-table th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); background: var(--surface-card); border-bottom: 1px solid var(--border-default); }
+.datasheet-construction-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-default); color: var(--text-secondary); vertical-align: middle; }
+.datasheet-construction-table tr:last-child td { border-bottom: none; }
+.datasheet-construction-table tr:hover { background: var(--surface-hover); }
+.construction-pct-cell { font-weight: 600; }
+.construction-pct-cell.cpct-done    { color: var(--status-active); }
+.construction-pct-cell.cpct-partial { color: var(--accent-primary); }
+.construction-pct-cell.cpct-zero    { color: var(--text-tertiary); }
+.inline-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.inline-bar { flex: 1; height: 5px; background: var(--border-default); border-radius: 3px; overflow: hidden; }
+.inline-bar-fill { height: 100%; background: var(--accent-primary); border-radius: 3px; }
+.inline-bar-fill.fill-done { background: var(--status-active); }
+
+/* ============================================ Development Panel */
+.development-panel {
+  padding: 48px 64px; overflow-y: auto; background: var(--bg-primary);
+  flex: 1; display: flex; flex-direction: column;
+  height: calc(100vh - 62px);
+}
+.development-panel-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+.development-panel-subtitle { font-size: 12px; color: var(--text-tertiary); margin-bottom: 40px; font-family: 'JetBrains Mono', monospace; }
+.development-stepper-wrap { width: 100%; max-width: 520px; }
+.development-stepper-wrap .step-v { gap: 16px; }
+.development-stepper-wrap .step-v-circle { width: 40px; height: 40px; font-size: 18px; }
+.development-stepper-wrap .step-v-line   { min-height: 36px; }
+.development-stepper-wrap .step-v-label  { font-size: 15px; padding-top: 8px; }
+.development-stepper-wrap .step-v-content { padding-bottom: 28px; }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-icon">🏗️</div>
+        <div class="logo-text">
+          <h1>ProjectHub</h1>
+          <p>Project Management Dashboard</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-project-bar">
+      <button class="project-bar-toggle" id="projectBarToggle">
+        <span id="projectBarLabel">All Projects</span>
+        <span class="project-bar-toggle-arrow">▼</span>
+      </button>
+      <div class="project-bar-dropdown" id="projectBarDropdown">
+        <div id="projectBar" class="project-bar"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-shrink:0;">
+      <button class="theme-toggle" id="refreshBtn" title="Refresh">🔄</button>
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark / light mode">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-content" id="mainContent">
+
+    <div id="portfolioView">
+      <div class="portfolio-header">
+        <h2>All Projects</h2>
+        <span id="portfolioCount" class="portfolio-count"></span>
+        <button class="refresh-btn" id="taskViewBtnPortfolio" style="margin-left:auto;background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border-default);padding:7px 14px;border-radius:6px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;">✅ Pending Tasks</button>
+      </div>
+      <div id="portfolioGrid" class="portfolio-grid"></div>
+    </div>
+
+    <div id="projectView">
+
+      <button class="nav-toggle-btn" id="navToggleBtn" title="Open menu">&#9776;</button>
+
+      <div class="nav-backdrop" id="navBackdrop"></div>
+
+      <nav class="project-nav" id="projectNav">
+        <div class="project-nav-header">
+          <div class="project-nav-name" id="projectNavName"></div>
+          <button class="nav-close-btn" id="navCloseBtn" title="Close menu">✕</button>
+        </div>
+        <ul class="project-nav-list">
+          <li class="project-nav-item active" data-section="summaries">
+            <span class="project-nav-icon">📧</span>
+            <span class="project-nav-label">Summaries</span>
+          </li>
+          <li class="project-nav-item" data-section="tasks">
+            <span class="project-nav-icon">✅</span>
+            <span class="project-nav-label">Tasks</span>
+          </li>
+          <li class="project-nav-item" data-section="datasheet">
+            <span class="project-nav-icon">📋</span>
+            <span class="project-nav-label">Datasheet</span>
+          </li>
+          <li class="project-nav-item" data-section="development">
+            <span class="project-nav-icon">🏗️</span>
+            <span class="project-nav-label">Development</span>
+          </li>
+          <li class="project-nav-item" data-section="construction">
+            <span class="project-nav-icon">🔨</span>
+            <span class="project-nav-label">Construction</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div id="masterTaskView">
+        <div class="task-topbar">
+          <button class="task-filter-toggle" id="taskFilterToggle">&#9881; Filters</button>
+        </div>
+        <div class="filters task-filters-panel" id="taskFiltersPanel" style="display:none;border-top:none;">
+          <div class="filter-group"><label>Time Period</label><select id="taskTimeFilter"><option value="1">Last Month</option><option value="3">Last 3 Months</option><option value="6">Last 6 Months</option><option value="12">Last 12 Months</option><option value="all">All Time</option></select></div>
+          <div class="filter-group"><label>Phase</label><select id="taskPhaseFilter"><option value="">All Phases</option></select></div>
+          <div class="filter-group"><label>Category</label><select id="taskCategoryFilter"><option value="">All Categories</option></select></div>
+          <div class="filter-group"><label>Status</label><select id="taskStatusFilter"><option value="">All (excl. Archived)</option><option value="Active">Active</option><option value="Recent">Recent</option><option value="Archived">Archived</option></select></div>
+        </div>
+        <div class="master-task-body">
+          <div class="master-task-header"><h2>Pending Tasks</h2><span id="taskCount" class="task-status todo">0 Pending</span></div>
+          <div class="master-tasks-table-wrapper"><table class="master-tasks-table" id="masterTaskTable"><thead><tr><th data-sort="project" style="cursor:pointer;">Project</th><th data-sort="phase" style="cursor:pointer;">Phase</th><th data-sort="category" style="cursor:pointer;">Category</th><th data-sort="description" style="cursor:pointer;">Task Description</th><th data-sort="owner" style="cursor:pointer;">Owner</th><th data-sort="deadline" style="cursor:pointer;">Deadline</th></tr></thead><tbody id="masterTasksTableBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="project-content" id="projectContent">
+
+        <div class="project-section" id="section-summaries">
+          <div class="task-topbar">
+            <button class="task-filter-toggle" id="summaryFilterToggle">&#9881; Filters</button>
+          </div>
+          <div class="filters" id="mainFilters" style="display:none;">
+            <div class="filter-group">
+              <label>Time Period</label>
+              <select id="timeFilter">
+                <option value="1">Last Month</option>
+                <option value="3">Last 3 Months</option>
+                <option value="6">Last 6 Months</option>
+                <option value="12">Last 12 Months</option>
+                <option value="all">All Time</option>
+              </select>
+            </div>
+            <div class="filter-group hidden">
+              <label>Project</label>
+              <select id="projectSelect"><option value="">All Projects</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Phase</label>
+              <select id="phaseFilter"><option value="">All Phases</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Category</label>
+              <select id="categoryFilter"><option value="">All Categories</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Status</label>
+              <select id="statusFilter">
+                <option value="">All</option>
+                <option value="Active">Active</option>
+                <option value="Recent">Recent</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+          </div>
+          <div class="summaries-layout">
+            <div class="sidebar" id="sidebar">
+              <div class="loading">Loading...</div>
+            </div>
+            <div class="detail-panel" id="detailPanel">
+              <div class="mobile-detail-back" id="mobileDetailBack">◀ Back to topics</div>
+              <div class="empty-state" style="padding:120px 40px;">
+                Select a card to view details
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-section" id="section-datasheet" style="display:none;">
+          <div class="datasheet-panel" id="datasheetPanel">
+            <div class="loading">Loading project data...</div>
+          </div>
+        </div>
+
+        <div class="project-section" id="section-development" style="display:none;">
+          <div class="development-panel" id="developmentPanel">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+
+        <div class="project-section" id="section-construction" style="display:none;">
+          <div class="development-panel" id="constructionPanel">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+// JavaScript_Frontend.gs - inlined
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm8cY1h0vzlvL_-0Rg8mJUurwfbF1ANnKuKUZ0MXE5KYmtpuqbYFqcbCQuX-bHYjT8uQ/exec";
+
+let allData = [];
+let allEmails = [];
+let allProjects = [];
+let activeProject = null;
+let activeSection = 'summaries'; // 'summaries' | 'datasheet' | 'development'
+
+// ============================================
+// VIEW MODE CONTROLLER
+// ============================================
+
+function setViewMode(mode) {
+  const mc = document.getElementById('mainContent');
+  mc.classList.remove('mode-portfolio', 'mode-project', 'mode-tasks');
+  mc.classList.add('mode-' + mode);
+}
+
+// ============================================
+// PROJECT SECTION NAVIGATION
+// ============================================
+
+function switchProjectSection(section) {
+  if (section !== 'summaries') closeMobileDetail();
+  if (section === 'tasks') {
+    openTaskView();
+    document.querySelectorAll('.project-nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === section);
+    });
+    return;
+  }
+  // If coming from task view, switch back to project mode
+  if (isTaskView) {
+    isTaskView = false;
+    setViewMode('project');
+  }
+  activeSection = section;
+  document.querySelectorAll('.project-nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.section === section);
+  });
+  ['summaries', 'datasheet', 'development', 'construction'].forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el) el.style.display = (s === section) ? 'flex' : 'none';
+  });
+  if (section === 'summaries')          displayCards();
+  else if (section === 'datasheet')     renderDatasheet();
+  else if (section === 'development')   renderDevelopmentPanel();
+  else if (section === 'construction')  renderConstructionPanel();
+}
+
+// ============================================
+// PORTFOLIO VIEW
+// ============================================
+
+function renderPortfolio() {
+  const grid    = document.getElementById('portfolioGrid');
+  const countEl = document.getElementById('portfolioCount');
+  if (!grid) return;
+
+  const DEV_STAGE_LABELS = ['Land & Prep', 'Environment', 'Grid Sync', 'Tech Design', 'Permitting'];
+  const projectNames = [...new Set(allData.map(i => i.project).filter(Boolean))].sort();
+  const projectsMap  = {};
+  allProjects.forEach(p => { if (p.project) projectsMap[p.project] = p; });
+
+  if (countEl) countEl.textContent = projectNames.length + ' project' + (projectNames.length !== 1 ? 's' : '');
+
+  if (projectNames.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No projects found. Run Smart Process in Google Sheet.</div>';
+    return;
+  }
+
+  const weights = [5, 10, 15, 40, 20, 10];
+  let html = '';
+
+  projectNames.forEach(name => {
+    const p        = projectsMap[name] || {};
+    const display  = formatProjectName(name);
+    const status   = String(p.status || '—');
+    const location = p.location || '—';
+    const capacity = p.capacity_mw ? p.capacity_mw + ' MW' : '—';
+    const stageIdx = parseInt(p.dev_stage_index) || 0;
+    const stageLabel = DEV_STAGE_LABELS[Math.min(stageIdx, DEV_STAGE_LABELS.length - 1)];
+    const sl = status.toLowerCase();
+    const statusClass = sl.includes('active') ? 's-active' :
+                        sl.includes('develop') ? 's-development' :
+                        sl.includes('construct') ? 's-construction' : 's-default';
+
+    const pctVals = [
+      parseInt(p.civil_works_pct)   || 0,
+      parseInt(p.pv_ramming_pct)    || 0,
+      parseInt(p.pv_mounting_pct)   || 0,
+      parseInt(p.bess_pct)          || 0,
+      parseInt(p.electrical_pct)    || 0,
+      parseInt(p.commissioning_pct) || 0
+    ];
+    let totalPct = 0;
+    pctVals.forEach((v, i) => { totalPct += (v / 100) * weights[i]; });
+    totalPct = Math.round(totalPct);
+    const hasConstruction = pctVals.some(v => v > 0);
+
+    html +=
+      '<div class="portfolio-card" data-project="' + esc(name) + '">' +
+        '<div class="portfolio-card-header">' +
+          '<div class="portfolio-card-name">' + esc(display) + '</div>' +
+          '<div class="portfolio-card-status ' + statusClass + '">' + esc(status) + '</div>' +
+        '</div>' +
+        '<div class="portfolio-card-meta">' +
+          '<div class="portfolio-meta-label">Location</div><div class="portfolio-meta-value">' + esc(location) + '</div>' +
+          '<div class="portfolio-meta-label">Capacity</div><div class="portfolio-meta-value">' + esc(capacity) + '</div>' +
+          '<div class="portfolio-meta-label">Dev Stage</div>' +
+          '<div class="portfolio-meta-value"><span class="portfolio-stage-badge">' + esc(stageLabel) + '</span></div>' +
+        '</div>' +
+        (hasConstruction ?
+          '<div class="portfolio-card-progress">' +
+            '<div class="portfolio-progress-label"><span>Construction</span><span>' + totalPct + '%</span></div>' +
+            '<div class="portfolio-progress-bar-wrap"><div class="portfolio-progress-bar-fill" style="width:' + totalPct + '%"></div></div>' +
+          '</div>' : '') +
+      '</div>';
+  });
+
+  grid.innerHTML = html;
+  grid.querySelectorAll('.portfolio-card').forEach(card => {
+    card.addEventListener('click', () => selectProject(card.dataset.project));
+  });
+}
+
+// ============================================
+// DATASHEET
+// ============================================
+
+function makeDatasheetField(label, value, mono) {
+  return '<div class="datasheet-field">' +
+    '<div class="datasheet-field-label">' + esc(label) + '</div>' +
+    '<div class="datasheet-field-value' + (mono ? ' mono' : '') + '">' + esc(String(value || '—')) + '</div>' +
+  '</div>';
+}
+
+function renderDatasheet() {
+  const panel = document.getElementById('datasheetPanel');
+  if (!panel || !activeProject) return;
+
+  const p = allProjects.find(proj => proj.project === activeProject) || {};
+  const display = formatProjectName(activeProject);
+  const DEV_STAGE_LABELS = ['Land & Prep', 'Environment', 'Grid Sync', 'Tech Design', 'Permitting'];
+  const stageIdx   = parseInt(p.dev_stage_index) || 0;
+  const stageLabel = DEV_STAGE_LABELS[Math.min(stageIdx, DEV_STAGE_LABELS.length - 1)];
+
+  const milestones = [
+    { name: 'Civil Works',   key: 'civil_works_pct',   w: 5  },
+    { name: 'PV Ramming',    key: 'pv_ramming_pct',    w: 10 },
+    { name: 'PV Mounting',   key: 'pv_mounting_pct',   w: 15 },
+    { name: 'BESS Delivery', key: 'bess_pct',          w: 40 },
+    { name: 'Electrical',    key: 'electrical_pct',    w: 20 },
+    { name: 'Commissioning', key: 'commissioning_pct', w: 10 }
+  ];
+  let totalPct = 0;
+  milestones.forEach(m => { totalPct += ((parseInt(p[m.key]) || 0) / 100) * m.w; });
+  totalPct = Math.round(totalPct);
+
+  const cRows = milestones.map(m => {
+    const pct = parseInt(p[m.key]) || 0;
+    const cls = pct === 100 ? 'cpct-done' : (pct > 0 ? 'cpct-partial' : 'cpct-zero');
+    const fillCls = pct === 100 ? ' fill-done' : '';
+    return '<tr>' +
+      '<td>' + esc(m.name) + '</td>' +
+      '<td style="width:45%;"><div class="inline-bar-wrap"><div class="inline-bar"><div class="inline-bar-fill' + fillCls + '" style="width:' + pct + '%"></div></div></div></td>' +
+      '<td class="construction-pct-cell ' + cls + '">' + pct + '%</td>' +
+      '<td style="font-size:11px;color:var(--text-tertiary);">' + m.w + '% wt</td>' +
+    '</tr>';
+  }).join('');
+
+  panel.innerHTML =
+    '<div class="datasheet-title">' + esc(display) + '</div>' +
+    '<div class="datasheet-subtitle">Last updated: ' + esc(formatDate(p.last_updated)) + '</div>' +
+    '<div class="datasheet-section-title">📋 Project Information</div>' +
+    '<div class="datasheet-grid">' +
+      makeDatasheetField('Status', p.status) +
+      makeDatasheetField('Location', p.location) +
+      makeDatasheetField('Capacity', p.capacity_mw ? p.capacity_mw + ' MW' : '—', true) +
+      makeDatasheetField('Dev Stage', stageIdx + ' – ' + stageLabel, true) +
+      makeDatasheetField('Operation Status', p.operation_status) +
+    '</div>' +
+    '<div class="datasheet-divider"></div>' +
+    '<div class="datasheet-section-title">⚙️ Construction Progress — Overall: ' + totalPct + '%</div>' +
+    '<table class="datasheet-construction-table">' +
+      '<thead><tr><th>Milestone</th><th>Progress</th><th>%</th><th>Weight</th></tr></thead>' +
+      '<tbody>' + cRows + '</tbody>' +
+    '</table>';
+}
+
+// ============================================
+// DEVELOPMENT PANEL
+// ============================================
+
+function renderDevelopmentPanel() {
+  const panel = document.getElementById('developmentPanel');
+  if (!panel || !activeProject) return;
+  const p = allProjects.find(proj => proj.project === activeProject) || {};
+  const stageIdx = parseInt(p.dev_stage_index) || 0;
+  const display  = formatProjectName(activeProject);
+  panel.innerHTML =
+    '<div class="development-panel-title">Development Pipeline</div>' +
+    '<div class="development-panel-subtitle">' + esc(display) + ' — Stage ' + stageIdx + ' of 4</div>' +
+    '<div class="development-stepper-wrap">' + getVerticalStepperHTML(stageIdx) + '</div>';
+}
+
+function renderConstructionPanel() {
+  const panel = document.getElementById('constructionPanel');
+  if (!panel || !activeProject) return;
+  const p = allProjects.find(proj => proj.project === activeProject) || {};
+  const display = formatProjectName(activeProject);
+
+  const milestones = [
+    { name: 'Civil Works',   pct: parseInt(p.civil_works_pct)   || 0 },
+    { name: 'PV Ramming',    pct: parseInt(p.pv_ramming_pct)    || 0 },
+    { name: 'PV Mounting',   pct: parseInt(p.pv_mounting_pct)   || 0 },
+    { name: 'BESS Delivery', pct: parseInt(p.bess_pct)          || 0 },
+    { name: 'Electrical',    pct: parseInt(p.electrical_pct)    || 0 },
+    { name: 'Commissioning', pct: parseInt(p.commissioning_pct) || 0 }
+  ];
+  const weights = [5, 10, 15, 40, 20, 10];
+
+  let total = 0;
+  milestones.forEach((m, i) => { total += (m.pct / 100) * weights[i]; });
+  total = Math.round(total);
+
+  let gridHTML = '<div class="milestones-grid">';
+  milestones.forEach(m => {
+    const isDone      = m.pct === 100;
+    const inProgress  = m.pct > 0 && m.pct < 100;
+    const icon        = isDone ? '✓' : (inProgress ? '↻' : '');
+    const checkStyle  = inProgress ? 'style="border-color:var(--accent-primary);color:var(--accent-primary);"' : '';
+    gridHTML +=
+      '<div class="milestone-item ' + (isDone ? 'done' : '') + '">' +
+        '<div class="milestone-checkbox" ' + checkStyle + '>' + icon + '</div>' +
+        '<span>' + esc(m.name) + '</span>' +
+        '<span class="milestone-weight">' + m.pct + '%</span>' +
+      '</div>';
+  });
+  gridHTML += '</div>';
+
+  panel.innerHTML =
+    '<div class="development-panel-title">Construction Progress</div>' +
+    '<div class="development-panel-subtitle">' + esc(display) + '</div>' +
+    '<div style="display:flex;align-items:flex-start;gap:48px;flex-wrap:wrap;margin-top:8px;">' +
+      '<div class="kpi-ring-container" style="--progress:' + total + '%;">' +
+        '<div class="kpi-ring-inner">' +
+          '<div class="kpi-value">' + total + '%</div>' +
+          '<div class="kpi-label">Done</div>' +
+        '</div>' +
+      '</div>' +
+      gridHTML +
+    '</div>';
+}
+
+// ============================================
+// HELPERS
+// ============================================
+
+function esc(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/** Format ISO/raw date string → "31 Jan 2026" */
+function formatDate(str) {
+  if (!str) return 'N/A';
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Replace underscores with spaces for display */
+function formatProjectName(name) {
+  return (name || '').replace(/_/g, ' ');
+}
+
+/** Map phase string → CSS class name */
+function getPhaseClass(phase) {
+  const p = (phase || '').toLowerCase();
+  if (p.includes('development'))           return 'development';
+  if (p.includes('construction'))          return 'construction';
+  if (p.includes('financ'))               return 'financing';
+  if (p.includes('operat'))               return 'operations';
+  if (p.includes('general') || p.includes('corporate')) return 'general-corporate';
+  return 'active';
+}
+
+/** Short phase label for badge */
+function phaseLabel(phase) {
+  const p = (phase || '').toLowerCase();
+  if (p.includes('development'))  return 'Dev';
+  if (p.includes('construction')) return 'Const';
+  if (p.includes('financ'))       return 'Finance';
+  if (p.includes('operat'))       return 'Ops';
+  if (p.includes('general') || p.includes('corporate')) return 'Corp';
+  return phase || 'Active';
+}
+
+function getProjectColorClass(str) {
+  let hash = 0;
+  for (let i = 0; i < (str || '').length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return 'tag-color-' + Math.abs(hash % 7);
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+}
+
+// ============================================
+// DATA LOADING
+// ============================================
+
+async function loadData() {
+  setViewMode('portfolio');
+  const grid = document.getElementById('portfolioGrid');
+  if (grid) grid.innerHTML = '<div class="loading">Loading projects...</div>';
+
+  try {
+    const [summariesRes, emailsRes, projectsRes] = await Promise.all([
+      fetch(SCRIPT_URL + '?action=getFirestoreSummaries'),
+      fetch(SCRIPT_URL + '?action=getFirestoreEmails'),
+      fetch(SCRIPT_URL + '?action=getFirestoreProjects').catch(() => null)
+    ]);
+
+    const summariesResult = await summariesRes.json();
+    if (!summariesResult.success) throw new Error(summariesResult.error);
+    allData = summariesResult.data || [];
+
+    const emailsResult = await emailsRes.json();
+    if (emailsResult.success) allEmails = emailsResult.data || [];
+
+    if (projectsRes) {
+      try {
+        const projectsResult = await projectsRes.json();
+        if (projectsResult.success) allProjects = projectsResult.data || [];
+      } catch(e) { allProjects = []; }
+    }
+
+    renderProjectBar();
+
+    const projects   = [...new Set(allData.map(i => i.project))].filter(Boolean).sort();
+    const phases     = [...new Set(allData.map(i => i.phase))].filter(Boolean).sort();
+    const categories = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+
+    document.getElementById('projectSelect').innerHTML =
+      '<option value="">All Projects</option>' +
+      projects.map(p => '<option>' + esc(p) + '</option>').join('');
+
+    document.getElementById('phaseFilter').innerHTML =
+      '<option value="">All Phases</option>' +
+      phases.map(p => '<option>' + esc(p) + '</option>').join('');
+
+    document.getElementById('categoryFilter').innerHTML =
+      '<option value="">All Categories</option>' +
+      categories.map(c => '<option>' + esc(c) + '</option>').join('');
+
+    // Boot into portfolio mode
+    setViewMode('portfolio');
+    renderPortfolio();
+
+    await initMasterTasks();
+
+  } catch (error) {
+    setViewMode('portfolio');
+    const grid = document.getElementById('portfolioGrid');
+    if (grid) grid.innerHTML = '<div class="error-msg">Error loading data: ' + esc(error.message) + '</div>';
+  }
+}
+
+// ============================================
+// CARD LIST
+// ============================================
+
+function displayCards() {
+  const timeMonths = document.getElementById('timeFilter').value;
+  const project    = document.getElementById('projectSelect').value;
+  const phase      = document.getElementById('phaseFilter').value;
+  const category   = document.getElementById('categoryFilter').value;
+  const status     = document.getElementById('statusFilter').value;
+
+  let filtered = allData;
+
+  if (timeMonths !== 'all') {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - parseInt(timeMonths));
+    filtered = filtered.filter(i => !i.last_updated || new Date(i.last_updated) >= cutoff);
+  }
+
+  if (activeProject) {
+    filtered = filtered.filter(i => i.project === activeProject);
+  } else if (project) {
+    filtered = filtered.filter(i => i.project === project);
+  }
+
+  if (phase)    filtered = filtered.filter(i => i.phase === phase);
+  if (category) filtered = filtered.filter(i => i.category === category);
+  if (status)   filtered = filtered.filter(i => i.status === status);
+
+  filtered.sort((a, b) => {
+    const pa = (a.project || '').toLowerCase(), pb = (b.project || '').toLowerCase();
+    if (pa !== pb) return pa.localeCompare(pb);
+    const pha = (a.phase || '').toLowerCase(), phb = (b.phase || '').toLowerCase();
+    if (pha !== phb) return pha.localeCompare(phb);
+    return (a.category || '').toLowerCase().localeCompare((b.category || '').toLowerCase());
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('sidebar').innerHTML = '<div class="empty-state">No matches found</div>';
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((item, idx) => {
+    const phClass = getPhaseClass(item.phase);
+    const emailWord = item.email_count === 1 ? 'email' : 'emails';
+    html +=
+      '<div class="card" data-idx="' + idx + '">' +
+        '<div class="card-header">' +
+          '<div class="card-status ' + phClass + '"></div>' +
+          '<div class="card-title">' +
+            esc(item.project) + ' › ' + esc(item.phase || '—') + ' › ' + esc(item.category) +
+          '</div>' +
+        '</div>' +
+        '<div class="card-meta">' +
+          '<span>' + item.email_count + ' ' + emailWord + '</span>' +
+          '<span class="card-badge ' + phClass + '">' + esc(phaseLabel(item.phase)) + '</span>' +
+        '</div>' +
+      '</div>';
+  });
+
+  document.getElementById('sidebar').innerHTML = html;
+
+  document.querySelectorAll('.card').forEach((card, idx) => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      showDetail(filtered[idx]);
+    });
+  });
+
+  // On desktop: auto-open first card. On mobile: leave list visible, user taps to open.
+  if (filtered.length > 0 && !document.body.classList.contains('mobile-ui')) {
+    document.querySelector('.card').click();
+  }
+}
+
+// ============================================
+// DETAIL PANEL
+// ============================================
+
+function showDetail(item) {
+  const emailLinks  = getEmailLinks(item);
+  const tasks       = extractTasks(item);
+  const attachments = extractAttachments(item);
+
+  // Helper to format arrays or strings
+  const formatData = (data) => {
+    if (Array.isArray(data)) return esc(data.map(d => '• ' + (typeof d === 'object' ? JSON.stringify(d) : d)).join('\n'));
+    return esc(data || 'None');
+  };
+
+  // ── Files & Emails tab ──
+  let emailsHTML = '';
+  if (emailLinks.length > 0) {
+    emailsHTML = '<div class="section-title">📧 Related Emails (' + emailLinks.length + ')</div>';
+    emailsHTML += '<div class="email-list">';
+    emailLinks.forEach((email, i) => {
+      emailsHTML +=
+        '<a href="' + email.url + '" target="_blank" class="email-item">' +
+          '<div class="email-item-header">' +
+            '<div class="email-item-title">' +
+              '<span class="email-item-icon">📩</span>' +
+              esc(email.sender) +
+            '</div>' +
+          '</div>' +
+          '<div class="email-item-meta">' +
+            '<div class="email-meta-label">Date:</div>' +
+            '<div class="email-meta-value">' + esc(email.date) + (email.time ? ' · ' + esc(email.time) : '') + '</div>' +
+          '</div>' +
+        '</a>';
+    });
+    emailsHTML += '</div>';
+  } else {
+    emailsHTML = '<div class="section-title">📧 Related Emails</div><div class="empty-state">No emails found</div>';
+  }
+
+  let attachmentsHTML = '';
+  if (attachments.length > 0) {
+    attachmentsHTML = '<div class="section-divider"></div>';
+    attachmentsHTML += '<div class="section-title">📎 Attachments</div>';
+    attachmentsHTML += '<div class="attachments-grid">';
+    attachments.forEach(att => {
+      attachmentsHTML +=
+        '<a href="' + att.url + '" target="_blank" class="attachment-card">' +
+          '<div class="attachment-icon">' + att.icon + '</div>' +
+          '<div class="attachment-name">' + esc(att.name) + '</div>' +
+          '<div class="attachment-type">' + esc(att.type) + '</div>' +
+        '</a>';
+    });
+    attachmentsHTML += '</div>';
+  }
+
+  // ── Tasks tab ──
+  let tasksHTML = '';
+  if (tasks.length > 0) {
+    tasksHTML = '<div class="tasks-table-wrapper"><table class="tasks-table">';
+    tasksHTML += '<thead><tr><th>Status</th><th>Task</th><th>Responsible</th></tr></thead><tbody>';
+    tasks.forEach(t => {
+      tasksHTML +=
+        '<tr>' +
+          '<td><span class="task-status ' + t.status + '">' + t.status + '</span></td>' +
+          '<td class="task-description">' + esc(t.description) + '</td>' +
+          '<td class="task-responsible">' + esc(t.responsible || '—') + '</td>' +
+        '</tr>';
+    });
+    tasksHTML += '</tbody></table></div>';
+  } else {
+    tasksHTML = '<div class="empty-state">No tasks</div>';
+  }
+
+  const phClass = getPhaseClass(item.phase);
+
+  const detailPanel = document.getElementById('detailPanel');
+
+  // Keep the back button, replace only the content after it
+  const backBtn = document.getElementById('mobileDetailBack');
+  detailPanel.innerHTML =
+    '<div class="detail-header">' +
+      '<h2>' + esc(item.project) + ' › ' + esc(item.phase || '—') + ' › ' + esc(item.category) + '</h2>' +
+      '<div class="detail-meta">' +
+        '<div class="detail-meta-item">📧 ' + item.email_count + (item.email_count === 1 ? ' email' : ' emails') + '</div>' +
+        '<div class="detail-meta-item">📅 ' + formatDate(item.time_period || item.last_updated) + '</div>' +
+        '<div class="detail-meta-item"><span class="card-badge ' + phClass + '" style="font-size:11px;">' + esc(item.phase || item.status) + '</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="tabs">' +
+      '<div class="tab active" data-tab="summary">Summary</div>' +
+      '<div class="tab" data-tab="tasks">Tasks</div>' +
+      '<div class="tab" data-tab="files">Files & Emails</div>' +
+    '</div>' +
+    '<div class="tab-content active" id="summary-content">' +
+      '<div class="summary-section"><h3>Executive Summary</h3><p>' + esc(item.executive_summary || 'No summary') + '</p></div>' +
+      '<div class="summary-section"><h3>Key Points</h3><pre>' + formatData(item.key_points) + '</pre></div>' +
+      (item.risks && item.risks.length > 0 && item.risks !== 'None identified' ?
+        '<div class="summary-section"><h3>Risk Areas</h3><pre>' + formatData(item.risks) + '</pre></div>' : '') +
+      '<div class="summary-section"><h3>Next Steps</h3><pre>' + formatData(item.next_steps) + '</pre></div>' +
+    '</div>' +
+    '<div class="tab-content" id="tasks-content">' + tasksHTML + '</div>' +
+    '<div class="tab-content" id="files-content">' + emailsHTML + attachmentsHTML + '</div>';
+
+  // Re-insert back button at top (innerHTML wiped it)
+  if (backBtn) detailPanel.insertBefore(backBtn, detailPanel.firstChild);
+
+  detailPanel.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      detailPanel.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      detailPanel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      detailPanel.querySelector('#' + this.dataset.tab + '-content').classList.add('active');
+    });
+  });
+
+  // On mobile: open detail as full-screen overlay
+  if (document.body.classList.contains('mobile-ui')) {
+    detailPanel.classList.add('mobile-detail-open');
+    detailPanel.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileDetail() {
+  const detailPanel = document.getElementById('detailPanel');
+  if (detailPanel) detailPanel.classList.remove('mobile-detail-open');
+  document.body.style.overflow = '';
+  // Deselect card
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+}
+
+function getEmailLinks(item) {
+  const links = [];
+  const matches = allEmails.filter(e =>
+    e.project === item.project && e.phase === item.phase && e.category === item.category
+  );
+  matches.forEach(email => {
+    if (email.mail) {
+      const urls = email.mail.match(/(https:\/\/docs\.google\.com\/[^\s<>"]+)/g);
+      if (urls) {
+        urls.forEach(url => {
+          let dateObj = null, isValidDate = false;
+          if (email.date) {
+            const clean = String(email.date)
+              .replace(/\s+at\s+/i, ' ')
+              .replace(/\s+(EET|EST|EDT|PST|PDT|CET|CEST|UTC|GMT|MSK|JST|IST)\b/gi, '')
+              .trim();
+            dateObj = new Date(clean);
+            isValidDate = !isNaN(dateObj.getTime());
+          }
+          links.push({
+            url,
+            sender: email.sender || 'Unknown',
+            date: isValidDate
+              ? dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+              : (email.date || 'N/A'),
+            time: isValidDate
+              ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : ''
+          });
+        });
+      }
+    }
+  });
+  return links;
+}
+
+function extractTasks(item) {
+  const tasks = [];
+  [
+    { field: item.action_items, status: 'todo' },
+    { field: item.completed_items, status: 'done' }
+  ].forEach(({ field, status }) => {
+    if (!field || field === 'None identified') return;
+
+    // Handle both new backend (array) and fallback string formats
+    const itemsArray = Array.isArray(field) ? field : field.split('\n');
+
+    itemsArray.forEach(line => {
+      const textLine = typeof line === 'object' ? JSON.stringify(line) : String(line);
+      const clean = textLine.replace(/^[•\-*]\s*/, '').trim();
+      if (clean.length > 3) {
+        const owner    = clean.match(/\(Owner:\s*([^)]+)\)/i)?.[1] || clean.match(/\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\)/)?.[1];
+        const deadline = clean.match(/\((\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\w+\s+\d{1,2},?\s*\d{4}?)\)/i)?.[1];
+        const desc     = clean.replace(/\([^)]+\)/g, '').trim();
+        tasks.push({ status, description: desc || clean, responsible: owner || '', deadline: deadline || '' });
+      }
+    });
+  });
+  return tasks;
+}
+
+function extractAttachments(item) {
+  const attachments = [];
+  
+  // Convert key_points to string if it arrives as an array
+  const kpText = Array.isArray(item.key_points) ? item.key_points.join(' ') : (item.key_points || '');
+  const execSummary = item.executive_summary || '';
+  
+  const text = [execSummary, kpText].join(' ');
+  const urls = [...new Set(text.match(/(https?:\/\/[^\s<>"{}|\\^\[\]\` ]+)/gi) || [])];
+  
+  urls.forEach(url => {
+    url = url.replace(/[.,;:!?)]+$/, '');
+    let icon = '📄', type = 'Link', name = 'Document';
+    if (url.includes('docs.google.com')) {
+      if (url.includes('/spreadsheets/')) { icon = '📊'; type = 'Sheets'; name = 'Spreadsheet'; }
+      else if (url.includes('/document/'))     { icon = '📝'; type = 'Docs';   name = 'Document'; }
+      else if (url.includes('/presentation/')) { icon = '📊'; type = 'Slides'; name = 'Presentation'; }
+      else { icon = '📁'; type = 'Drive'; name = 'File'; }
+    } else if (url.match(/\.(pdf|PDF)($|\?)/)) {
+      icon = '📕'; type = 'PDF'; name = 'PDF';
+    }
+    attachments.push({ url, icon, type, name });
+  });
+  return attachments;
+}
+
+// ============================================
+// PROJECT BAR
+// ============================================
+
+function renderProjectBar() {
+  const bar      = document.getElementById('projectBar');
+  const label    = document.getElementById('projectBarLabel');
+  const toggle   = document.getElementById('projectBarToggle');
+  if (!bar) return;
+
+  const projectsFromData = [...new Set(allData.map(i => i.project).filter(Boolean))].sort();
+
+  let html = '<button class="project-chip' + (!activeProject ? ' active' : '') +
+             '" data-project="">All Projects</button>';
+  projectsFromData.forEach(name => {
+    const isActive = activeProject === name;
+    const displayName = formatProjectName(name);
+    html +=
+      '<button class="project-chip' + (isActive ? ' active' : '') +
+      '" data-project="' + esc(name) + '">' + esc(displayName) + '</button>';
+  });
+
+  bar.innerHTML = html;
+
+  // Update toggle button label to reflect current selection
+  if (label) label.textContent = activeProject ? formatProjectName(activeProject) : 'All Projects';
+  if (toggle) toggle.classList.toggle('has-active', !!activeProject);
+
+  bar.querySelectorAll('.project-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      closeProjectDropdown();           // close dropdown after selection
+      selectProject(chip.dataset.project || null);
+    });
+  });
+}
+
+function closeProjectDropdown() {
+  const dropdown = document.getElementById('projectBarDropdown');
+  const toggle   = document.getElementById('projectBarToggle');
+  if (dropdown) dropdown.classList.remove('open');
+  if (toggle)   toggle.classList.remove('open');
+}
+
+function selectProject(name) {
+  activeProject = name || null;
+  renderProjectBar();
+  if (isTaskView) {
+    renderMasterTasks();
+    return;
+  }
+  if (!activeProject) {
+    setViewMode('portfolio');
+    renderPortfolio();
+  } else {
+    setViewMode('project');
+    const nameEl = document.getElementById('projectNavName');
+    if (nameEl) nameEl.textContent = formatProjectName(activeProject);
+    switchProjectSection(activeSection);
+  }
+}
+
+/** Vertical stepper for the right panel */
+function getVerticalStepperHTML(stageIndex) {
+  const steps = [
+    { name: 'Land & Prep',    icon: '📍' },
+    { name: 'Environment',    icon: '🌍' },
+    { name: 'Grid Sync',      icon: '⚡' },
+    { name: 'Tech Design',    icon: '📐' },
+    { name: 'Permitting',     icon: '🏛️' }
+  ];
+  const current = parseInt(stageIndex) || 0;
+  let html = '<div class="stepper-vertical">';
+  steps.forEach((step, idx) => {
+    const isLast    = idx === steps.length - 1;
+    let statusClass = '';
+    let icon        = step.icon;
+    if (idx < current)      { statusClass = 'completed'; icon = '✓'; }
+    else if (idx === current) { statusClass = 'active'; }
+
+    html +=
+      '<div class="step-v ' + statusClass + '">' +
+        '<div class="step-v-left">' +
+          '<div class="step-v-circle">' + icon + '</div>' +
+          (!isLast ? '<div class="step-v-line"></div>' : '') +
+        '</div>' +
+        '<div class="step-v-content">' +
+          '<div class="step-v-label">' + step.name + '</div>' +
+        '</div>' +
+      '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/** Horizontal stepper (kept for any standalone use) */
+function getDevelopmentStepperHTML(stageIndex) {
+  const steps = [
+    { name: 'Land & Prep', icon: '📍' },
+    { name: 'Environment', icon: '🌍' },
+    { name: 'Grid Sync',   icon: '⚡' },
+    { name: 'Tech Design', icon: '📐' },
+    { name: 'Permitting',  icon: '🏛️' }
+  ];
+  const current   = parseInt(stageIndex) || 0;
+  const fillWidth = current === 0 ? 0 : (current / (steps.length - 1)) * 100;
+
+  let html = '<div class="stepper-container">' +
+    '<div class="stepper-line"></div>' +
+    '<div class="stepper-line-fill" style="width:calc(' + fillWidth + '% * 0.8);"></div>';
+
+  steps.forEach((step, idx) => {
+    let statusClass = '', icon = step.icon;
+    if (idx < current)      { statusClass = 'completed'; icon = '✓'; }
+    else if (idx === current) { statusClass = 'active'; }
+    html +=
+      '<div class="step ' + statusClass + '">' +
+        '<div class="step-circle">' + icon + '</div>' +
+        '<div class="step-label">' + step.name + '</div>' +
+      '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// ============================================
+// MASTER TASKS
+// ============================================
+
+let isTaskView   = false;
+let taskSortCol  = 'project';
+let taskSortAsc  = true;
+let phaseCategories = {};
+
+document.querySelectorAll('#masterTaskTable th').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.getAttribute('data-sort');
+    if (taskSortCol === col) { taskSortAsc = !taskSortAsc; }
+    else { taskSortCol = col; taskSortAsc = true; }
+    renderMasterTasks();
+  });
+});
+
+function renderMasterTasks() {
+  const timeMonths = document.getElementById('taskTimeFilter').value;
+  const phase      = document.getElementById('taskPhaseFilter').value;
+  const category   = document.getElementById('taskCategoryFilter').value;
+  const status     = document.getElementById('taskStatusFilter').value;
+
+  let allPendingTasks = [];
+  allData.forEach(item => {
+    // Status filter: default to excluding Archived unless user explicitly picks it
+    if (!status && item.status === 'Archived') return;
+    if (status && item.status !== status) return;
+    if (timeMonths !== 'all') {
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - parseInt(timeMonths));
+      if (item.last_updated && new Date(item.last_updated) < cutoff) return;
+    }
+    // Project: use chip bar activeProject
+    if (activeProject && item.project !== activeProject) return;
+    if (phase    && item.phase    !== phase)    return;
+    if (category && item.category !== category) return;
+
+    extractTasks(item).forEach(task => {
+      if (task.status === 'todo') {
+        allPendingTasks.push({
+          project: item.project, phase: item.phase, category: item.category,
+          description: task.description, owner: task.responsible || '—', deadline: task.deadline || '—'
+        });
+      }
+    });
+  });
+
+  allPendingTasks.sort((a, b) => {
+    const va = (a[taskSortCol] || '').toLowerCase();
+    const vb = (b[taskSortCol] || '').toLowerCase();
+    if (va < vb) return taskSortAsc ? -1 : 1;
+    if (va > vb) return taskSortAsc ?  1 : -1;
+    return 0;
+  });
+
+  document.getElementById('taskCount').textContent = allPendingTasks.length + ' Pending Tasks';
+
+  const tbody = document.getElementById('masterTasksTableBody');
+  if (allPendingTasks.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">No pending tasks! 🎉</td></tr>';
+    return;
+  }
+
+  let rowsHtml = '';
+  allPendingTasks.forEach(task => {
+    rowsHtml +=
+      '<tr>' +
+        '<td><span class="project-badge ' + getProjectColorClass(task.project) + '">' + esc(formatProjectName(task.project)) + '</span></td>' +
+        '<td><span class="phase-badge">' + esc(task.phase || '—') + '</span></td>' +
+        '<td style="font-size:11px;color:var(--text-tertiary);">' + esc(task.category) + '</td>' +
+        '<td class="master-task-description">' + esc(task.description) + '</td>' +
+        '<td class="master-task-owner">' + esc(task.owner) + '</td>' +
+        '<td class="master-task-deadline">' + esc(task.deadline) + '</td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = rowsHtml;
+}
+
+async function loadCategoryReference() {
+  try {
+    const response = await fetch(SCRIPT_URL + '?action=getFirestoreCategories');
+    const result   = await response.json();
+    if (result.success) phaseCategories = result.phaseMap || {};
+  } catch (e) { phaseCategories = {}; }
+}
+
+function getAllPhases() { return Object.keys(phaseCategories).sort(); }
+function getCategoriesForPhase(phase) { return phaseCategories[phase] || []; }
+
+function onMainPhaseFilterChange() {
+  const selectedPhase  = document.getElementById('phaseFilter').value;
+  const categorySelect = document.getElementById('categoryFilter');
+  if (!selectedPhase) {
+    const all = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+    categorySelect.innerHTML = '<option value="">All Categories</option>' + all.map(c => '<option>' + esc(c) + '</option>').join('');
+  } else {
+    const cats = getCategoriesForPhase(selectedPhase);
+    categorySelect.innerHTML = '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
+  }
+  categorySelect.value = '';
+  if (activeProject && activeSection === 'summaries') displayCards();
+  else if (!activeProject) renderPortfolio();
+}
+
+function onTaskPhaseFilterChange() {
+  const selectedPhase  = document.getElementById('taskPhaseFilter').value;
+  const categorySelect = document.getElementById('taskCategoryFilter');
+  if (!selectedPhase) {
+    const all = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+    categorySelect.innerHTML = '<option value="">All Categories</option>' + all.map(c => '<option>' + esc(c) + '</option>').join('');
+  } else {
+    const cats = getCategoriesForPhase(selectedPhase);
+    categorySelect.innerHTML = '<option value="">All Categories</option>' + cats.map(c => '<option>' + esc(c) + '</option>').join('');
+  }
+  categorySelect.value = '';
+  renderMasterTasks();
+}
+
+async function initMasterTasks() {
+  try {
+    await loadCategoryReference();
+    // Populate task filter dropdowns
+    const phases = getAllPhases();
+    const taskPhaseEl = document.getElementById('taskPhaseFilter');
+    if (taskPhaseEl) {
+      taskPhaseEl.innerHTML = '<option value="">All Phases</option>' +
+        phases.map(p => '<option>' + esc(p) + '</option>').join('');
+    }
+    const cats = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+    const taskCatEl = document.getElementById('taskCategoryFilter');
+    if (taskCatEl) {
+      taskCatEl.innerHTML = '<option value="">All Categories</option>' +
+        cats.map(c => '<option>' + esc(c) + '</option>').join('');
+    }
+  } catch (error) {
+    const tbody = document.getElementById('masterTasksTableBody');
+    if (tbody) tbody.innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:40px;color:#dc2626;">Init Error: ' + error.message + '</td></tr>';
+  }
+}
+
+// ============================================
+// TASK VIEW HELPERS (global so switchProjectSection can call them)
+// ============================================
+
+function openTaskView() {
+  isTaskView = true;
+  const mc = document.getElementById('mainContent');
+  if (activeProject) { mc.classList.remove('tasks-from-portfolio'); }
+  else { mc.classList.add('tasks-from-portfolio'); }
+  setViewMode('tasks');
+  renderMasterTasks();
+}
+
+function closeTaskView() {
+  isTaskView = false;
+  if (!activeProject) {
+    setViewMode('portfolio');
+    renderPortfolio();
+  } else {
+    setViewMode('project');
+    const nameEl = document.getElementById('projectNavName');
+    if (nameEl) nameEl.textContent = formatProjectName(activeProject);
+    switchProjectSection(activeSection);
+  }
+}
+
+// ============================================
+// APP INIT
+// ============================================
+
+function initializeApp() {
+  // Restore dark mode
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = '☀️';
+  }
+
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) refreshBtn.addEventListener('click', loadData);
+
+  // Project dropdown toggle — position:fixed so it escapes overflow clipping
+  const projectBarToggle   = document.getElementById('projectBarToggle');
+  const projectBarDropdown = document.getElementById('projectBarDropdown');
+
+  function positionDropdown() {
+    if (!projectBarToggle || !projectBarDropdown) return;
+    const rect = projectBarToggle.getBoundingClientRect();
+    projectBarDropdown.style.top  = (rect.bottom + 6) + 'px';
+    projectBarDropdown.style.left = rect.left + 'px';
+    // Clamp so it doesn't go off-screen right edge
+    const dropW = Math.min(360, window.innerWidth - 24);
+    projectBarDropdown.style.width    = dropW + 'px';
+    projectBarDropdown.style.minWidth = '';
+    projectBarDropdown.style.maxWidth = '';
+  }
+
+  if (projectBarToggle && projectBarDropdown) {
+    projectBarToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !projectBarDropdown.classList.contains('open');
+      if (willOpen) positionDropdown();
+      projectBarDropdown.classList.toggle('open', willOpen);
+      projectBarToggle.classList.toggle('open', willOpen);
+    });
+  }
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#projectBarToggle') && !e.target.closest('#projectBarDropdown')) {
+      closeProjectDropdown();
+    }
+  });
+
+  // Mobile detail back button
+  const mobileDetailBack = document.getElementById('mobileDetailBack');
+  if (mobileDetailBack) mobileDetailBack.addEventListener('click', closeMobileDetail);
+
+  // ✅ Pending Tasks button (inside summaries toolbar)
+  const taskViewBtn = document.getElementById('taskViewBtn');
+  if (taskViewBtn) taskViewBtn.addEventListener('click', openTaskView);
+
+  // ✅ Pending Tasks button (inside portfolio view)
+  const taskViewBtnPortfolio = document.getElementById('taskViewBtnPortfolio');
+  if (taskViewBtnPortfolio) taskViewBtnPortfolio.addEventListener('click', openTaskView);
+
+  // Task filters toggle
+  const taskFilterToggle = document.getElementById('taskFilterToggle');
+  const taskFiltersPanel = document.getElementById('taskFiltersPanel');
+  if (taskFilterToggle && taskFiltersPanel) {
+    taskFilterToggle.addEventListener('click', () => {
+      const isOpen = taskFiltersPanel.style.display !== 'none';
+      taskFiltersPanel.style.display = isOpen ? 'none' : 'flex';
+      taskFilterToggle.classList.toggle('active', !isOpen);
+      taskFilterToggle.textContent = isOpen ? '\u2699 Filters' : '\u2715 Hide Filters';
+    });
+  }
+
+  // Summaries filters toggle
+  const summaryFilterToggle = document.getElementById('summaryFilterToggle');
+  const mainFilters = document.getElementById('mainFilters');
+  if (summaryFilterToggle && mainFilters) {
+    summaryFilterToggle.addEventListener('click', () => {
+      const isOpen = mainFilters.style.display !== 'none';
+      mainFilters.style.display = isOpen ? 'none' : 'flex';
+      summaryFilterToggle.classList.toggle('active', !isOpen);
+      summaryFilterToggle.textContent = isOpen ? '\u2699 Filters' : '\u2715 Hide Filters';
+    });
+  }
+
+  // ── Mobile nav: JS-class-driven (body.mobile-ui) ──────────────────
+  const navToggleBtn = document.getElementById('navToggleBtn');
+  const navCloseBtn  = document.getElementById('navCloseBtn');
+  const projectNav   = document.getElementById('projectNav');
+  const navBackdrop  = document.getElementById('navBackdrop');
+
+  // Detect mobile and toggle body class — called on load + resize
+  function updateMobileClass() {
+    if (window.innerWidth <= 900) {
+      document.body.classList.add('mobile-ui');
+    } else {
+      document.body.classList.remove('mobile-ui');
+      collapseNav(); // clean up if drawer was open
+    }
+  }
+  updateMobileClass();
+  window.addEventListener('resize', updateMobileClass);
+
+  function collapseNav() {
+    if (!projectNav) return;
+    projectNav.classList.remove('nav-expanded');
+    if (navBackdrop) navBackdrop.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  function expandNav() {
+    if (!projectNav) return;
+    projectNav.classList.add('nav-expanded');
+    if (navBackdrop) navBackdrop.classList.add('visible');
+    document.body.style.overflow = 'hidden'; // lock background scroll
+  }
+
+  // ☰ FAB opens the full-screen drawer
+  if (navToggleBtn) navToggleBtn.addEventListener('click', expandNav);
+
+  // ✕ inside drawer closes it
+  if (navCloseBtn) navCloseBtn.addEventListener('click', collapseNav);
+
+  // Backdrop tap closes drawer
+  if (navBackdrop) navBackdrop.addEventListener('click', collapseNav);
+
+  // Nav item tap: navigate then auto-close on mobile
+  document.querySelectorAll('.project-nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      switchProjectSection(item.dataset.section);
+      if (document.body.classList.contains('mobile-ui')) collapseNav();
+    });
+  });
+
+  // Summaries filter listeners
+  const phaseFilterEl = document.getElementById('phaseFilter');
+  if (phaseFilterEl) phaseFilterEl.addEventListener('change', onMainPhaseFilterChange);
+
+  ['timeFilter', 'projectSelect', 'categoryFilter', 'statusFilter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => {
+      if (activeProject && activeSection === 'summaries') displayCards();
+      else if (!activeProject) renderPortfolio();
+    });
+  });
+
+  // Task view filter listeners
+  const taskPhaseEl = document.getElementById('taskPhaseFilter');
+  if (taskPhaseEl) taskPhaseEl.addEventListener('change', onTaskPhaseFilterChange);
+
+  ['taskTimeFilter', 'taskCategoryFilter', 'taskStatusFilter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', renderMasterTasks);
+  });
+
+  loadData();
+}
+
+window.addEventListener('DOMContentLoaded', initializeApp);
+  
+</script>
+</body>
+</html>
