@@ -29,7 +29,6 @@ function syncEmailsToFirestore() {
 function _syncThreads(query, label, direction) {
   const config   = getConfig();
   const threads  = GmailApp.search(query);
-  const myEmail  = Session.getActiveUser().getEmail();
   let saved = 0;
 
   threads.forEach(thread => {
